@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -27,6 +26,7 @@ export default function Chat() {
   const [user, setUser] = useState(null);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [tempMessages, setTempMessages] = useState([]);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -64,16 +64,20 @@ export default function Chat() {
     initialData: [],
   });
 
+  // Combinar mensagens do banco com mensagens temporárias
+  const allMessages = [...messages, ...tempMessages];
+
   // Scroll automático para o final
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [allMessages, isTyping]);
 
   // Salvar mensagem no banco
   const createMessageMutation = useMutation({
     mutationFn: (messageData) => base44.entities.Message.create(messageData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", user?.id] });
+      setTempMessages([]);
     },
   });
 
@@ -97,18 +101,23 @@ export default function Chat() {
     }
 
     setError(null);
-    setIsTyping(true);
 
-    // Adicionar mensagem do usuário temporariamente
-    const tempUserMessage = {
-      id: Date.now(),
+    // Adicionar mensagem do usuário imediatamente na tela
+    const tempMessage = {
+      id: `temp-${Date.now()}`,
       user_message: userMessage,
       agent_response: "",
       timestamp: new Date().toISOString(),
       user_id: user.id,
+      isTemp: true,
     };
 
+    setTempMessages([tempMessage]);
+    setIsTyping(true);
+
     try {
+      console.log("Enviando para n8n:", webhookUrl);
+      
       // Enviar para o n8n
       const response = await fetch(webhookUrl, {
         method: "POST",
@@ -122,12 +131,15 @@ export default function Chat() {
         }),
       });
 
+      console.log("Status da resposta:", response.status);
+
       if (response.status === 401 || response.status === 403) {
-        // Token inválido ou expirado
         setError("Sua sessão expirou. Por favor, faça login novamente.");
         setTimeout(() => {
           base44.auth.logout();
         }, 2000);
+        setIsTyping(false);
+        setTempMessages([]);
         return;
       }
 
@@ -136,7 +148,9 @@ export default function Chat() {
       }
 
       const data = await response.json();
-      const agentResponse = data.response || data.message || "Desculpe, não consegui processar sua mensagem.";
+      console.log("Resposta do n8n:", data);
+
+      const agentResponse = data.response || data.message || data.output || "Desculpe, não consegui processar sua mensagem.";
 
       // Salvar conversa no banco
       await createMessageMutation.mutateAsync({
@@ -148,8 +162,9 @@ export default function Chat() {
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
       setError(
-        "Desculpe, não consegui processar sua mensagem. Verifique se o Webhook URL está correto e tente novamente."
+        `Erro: ${error.message}. Verifique se o Webhook URL está correto e se o n8n está respondendo corretamente.`
       );
+      setTempMessages([]);
     } finally {
       setIsTyping(false);
     }
@@ -186,7 +201,7 @@ export default function Chat() {
               <DialogHeader>
                 <DialogTitle>Configurações do n8n</DialogTitle>
                 <DialogDescription>
-                  Configure o Webhook URL do seu agente n8n para começar a conversar.
+                  Configure o Webhook URL do seu agente n8n. O n8n deve retornar um JSON com a chave "response", "message" ou "output".
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-4">
@@ -201,6 +216,14 @@ export default function Chat() {
                   <p className="text-xs text-gray-500">
                     Cole aqui a URL do webhook do seu workflow n8n
                   </p>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs text-blue-800 font-medium mb-1">
+                    ⚠️ Formato da resposta do n8n:
+                  </p>
+                  <code className="text-xs text-blue-700 block">
+                    {`{ "response": "texto da resposta" }`}
+                  </code>
                 </div>
                 <Button onClick={saveWebhookUrl} className="w-full">
                   Salvar Configuração
@@ -220,7 +243,7 @@ export default function Chat() {
 
         {/* Messages Area */}
         <div className="h-[calc(100vh-350px)] overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white">
-          {messages.length === 0 && !isTyping ? (
+          {allMessages.length === 0 && !isTyping ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
                 <Bot className="w-10 h-10 text-white" />
@@ -229,12 +252,14 @@ export default function Chat() {
                 Bem-vindo ao Chat AI!
               </h3>
               <p className="text-gray-600 max-w-md">
-                Comece uma conversa enviando uma mensagem. O assistente está pronto para ajudar!
+                {webhookUrl 
+                  ? "Comece uma conversa enviando uma mensagem. O assistente está pronto para ajudar!"
+                  : "Configure o Webhook URL do n8n clicando no ícone de configurações acima."}
               </p>
             </div>
           ) : (
             <>
-              {messages
+              {allMessages
                 .slice()
                 .reverse()
                 .map((msg) => (
@@ -244,11 +269,13 @@ export default function Chat() {
                       isUser={true}
                       timestamp={msg.timestamp}
                     />
-                    <ChatMessage
-                      message={msg.agent_response}
-                      isUser={false}
-                      timestamp={msg.timestamp}
-                    />
+                    {msg.agent_response && (
+                      <ChatMessage
+                        message={msg.agent_response}
+                        isUser={false}
+                        timestamp={msg.timestamp}
+                      />
+                    )}
                   </React.Fragment>
                 ))}
               <AnimatePresence>
