@@ -12,7 +12,8 @@ import {
   XCircle,
   Calendar,
   Settings,
-  Save
+  Save,
+  Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,14 +40,25 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -55,6 +67,7 @@ export default function Users() {
   const [currentUser, setCurrentUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [webhookUrl, setWebhookUrl] = useState("");
@@ -152,6 +165,21 @@ export default function Users() {
     }
   });
 
+  // Remover usuário
+  const deleteUserMutation = useMutation({
+    mutationFn: (userId) => base44.entities.User.delete(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setSuccess("Usuário removido com sucesso!");
+      setUserToDelete(null);
+      setTimeout(() => setSuccess(null), 3000);
+    },
+    onError: (error) => {
+      setError("Erro ao remover usuário: " + error.message);
+      setTimeout(() => setError(null), 5000);
+    }
+  });
+
   // Filtrar usuários
   const filteredUsers = users.filter(user => {
     const searchLower = searchTerm.toLowerCase();
@@ -188,6 +216,21 @@ export default function Users() {
         status: 'active'
       }
     });
+  };
+
+  // Remover usuário
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    
+    // Evitar que o admin se remova
+    if (userToDelete.id === currentUser.id) {
+      setError("Você não pode remover sua própria conta!");
+      setUserToDelete(null);
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    await deleteUserMutation.mutateAsync(userToDelete.id);
   };
 
   // Salvar webhook
@@ -230,7 +273,7 @@ export default function Users() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gerenciar Usuários</h1>
           <p className="text-gray-500 mt-1">
-            Controle de acessos e configurações do sistema
+            Apenas administradores podem adicionar e remover usuários
           </p>
         </div>
         <div className="flex gap-3">
@@ -432,6 +475,7 @@ export default function Users() {
                               <DropdownMenuItem onClick={() => handleExtendAccess(user, 30)}>
                                 Estender por 30 dias
                               </DropdownMenuItem>
+                              <DropdownMenuSeparator />
                             </>
                           )}
                           <DropdownMenuItem onClick={() => handleToggleUserStatus(user)}>
@@ -443,6 +487,15 @@ export default function Users() {
                           >
                             Ver Detalhes
                           </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => setUserToDelete(user)}
+                            className="text-red-600"
+                            disabled={user.id === currentUser.id}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Remover Usuário
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -453,6 +506,29 @@ export default function Users() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialog de Confirmação de Remoção */}
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. O usuário{" "}
+              <span className="font-bold">{userToDelete?.full_name || userToDelete?.email}</span>{" "}
+              será permanentemente removido do sistema, incluindo todo seu histórico de conversas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Remover Usuário
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Dialog de Configuração da Webhook */}
       <Dialog open={isConfigDialogOpen} onOpenChange={setIsConfigDialogOpen}>
@@ -551,7 +627,7 @@ export default function Users() {
                 </div>
               )}
 
-              <div className="pt-4 flex gap-3">
+              <div className="pt-4 flex gap-3 flex-wrap">
                 {selectedUser.is_temporary && !isAccessExpired(selectedUser) && (
                   <>
                     <Button 
@@ -584,6 +660,19 @@ export default function Users() {
                 >
                   {selectedUser.status === 'blocked' ? 'Desbloquear' : 'Bloquear'} Usuário
                 </Button>
+                {selectedUser.id !== currentUser.id && (
+                  <Button 
+                    onClick={() => {
+                      setUserToDelete(selectedUser);
+                      setSelectedUser(null);
+                    }}
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remover
+                  </Button>
+                )}
               </div>
             </div>
           )}
