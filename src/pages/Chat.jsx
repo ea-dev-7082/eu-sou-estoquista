@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Bot } from "lucide-react";
+import { AlertCircle, Bot, Ban } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
@@ -86,8 +86,16 @@ export default function Chat() {
     },
   });
 
+  // Verificar se usuário está bloqueado
+  const isUserBlocked = user?.status === 'blocked';
+
   // Enviar mensagem para o n8n
   const handleSendMessage = async (userMessage) => {
+    if (isUserBlocked) {
+      setError("Seu acesso ao chat foi bloqueado. Entre em contato com o administrador.");
+      return;
+    }
+
     if (!webhookUrl) {
       setError("O webhook do n8n não foi configurado. Entre em contato com o administrador.");
       return;
@@ -183,13 +191,23 @@ export default function Chat() {
           <div>
             <h2 className="text-white font-semibold text-lg">Assistente IA</h2>
             <p className="text-blue-100 text-sm">
-              {webhookUrl ? "Online - Responde instantaneamente" : "Aguardando configuração"}
+              {isUserBlocked ? "Acesso bloqueado" : webhookUrl ? "Online - Responde instantaneamente" : "Aguardando configuração"}
             </p>
           </div>
         </div>
 
+        {/* Usuário Bloqueado Alert */}
+        {isUserBlocked && (
+          <Alert variant="destructive" className="m-4">
+            <Ban className="h-4 w-4" />
+            <AlertDescription>
+              Seu acesso ao chat foi bloqueado pelo administrador. Entre em contato para mais informações.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Error Alert */}
-        {error && (
+        {error && !isUserBlocked && (
           <Alert variant="destructive" className="m-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
@@ -197,7 +215,7 @@ export default function Chat() {
         )}
 
         {/* Webhook não configurada Alert */}
-        {!webhookUrl && (
+        {!webhookUrl && !isUserBlocked && (
           <Alert className="m-4 bg-yellow-50 border-yellow-200">
             <AlertCircle className="h-4 w-4 text-yellow-600" />
             <AlertDescription className="text-yellow-800">
@@ -219,16 +237,22 @@ export default function Chat() {
         <div className="h-[calc(100vh-350px)] overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white">
           {allMessages.length === 0 && !isTyping ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
-                <Bot className="w-10 h-10 text-white" />
+              <div className={`w-20 h-20 ${isUserBlocked ? 'bg-gradient-to-br from-red-500 to-red-600' : 'bg-gradient-to-br from-blue-500 to-indigo-600'} rounded-full flex items-center justify-center mb-4 shadow-lg`}>
+                {isUserBlocked ? (
+                  <Ban className="w-10 h-10 text-white" />
+                ) : (
+                  <Bot className="w-10 h-10 text-white" />
+                )}
               </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Bem-vindo ao Chat AI!
+                {isUserBlocked ? "Acesso Bloqueado" : "Bem-vindo ao Chat AI!"}
               </h3>
               <p className="text-gray-600 max-w-md">
-                {webhookUrl 
-                  ? "Comece uma conversa enviando uma mensagem. O assistente está pronto para ajudar!"
-                  : "Aguarde a configuração do webhook para começar a conversar."}
+                {isUserBlocked 
+                  ? "Você não pode enviar mensagens no momento. Entre em contato com o administrador."
+                  : webhookUrl 
+                    ? "Comece uma conversa enviando uma mensagem. O assistente está pronto para ajudar!"
+                    : "Aguarde a configuração do webhook para começar a conversar."}
               </p>
             </div>
           ) : (
@@ -264,7 +288,7 @@ export default function Chat() {
         <ChatInput
           onSendMessage={handleSendMessage}
           isLoading={isTyping}
-          disabled={!webhookUrl}
+          disabled={!webhookUrl || isUserBlocked}
         />
       </div>
     </div>
