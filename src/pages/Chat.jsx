@@ -43,12 +43,12 @@ export default function Chat() {
       return allConfigs;
     },
     enabled: !!user,
-    initialData: [],
+    initialData: []
   });
 
   // Atualizar webhook URL quando configs carregarem
   useEffect(() => {
-    const webhookConfig = configs.find(c => c.config_key === 'n8n_webhook_url');
+    const webhookConfig = configs.find((c) => c.config_key === 'n8n_webhook_url');
     if (webhookConfig) {
       setWebhookUrl(webhookConfig.config_value);
     }
@@ -66,7 +66,7 @@ export default function Chat() {
       );
     },
     enabled: !!user,
-    initialData: [],
+    initialData: []
   });
 
   // Combinar mensagens do banco com mensagens temporárias
@@ -83,7 +83,7 @@ export default function Chat() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", user?.id] });
       setTempMessages([]);
-    },
+    }
   });
 
   // Verificar se usuário está bloqueado
@@ -110,7 +110,7 @@ export default function Chat() {
       agent_response: "",
       timestamp: new Date().toISOString(),
       user_id: user.id,
-      isTemp: true,
+      isTemp: true
     };
 
     setTempMessages([tempMessage]);
@@ -118,18 +118,18 @@ export default function Chat() {
 
     try {
       console.log("Enviando para n8n:", webhookUrl);
-      
+
       // Enviar para o n8n
       const response = await fetch(webhookUrl, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           message: userMessage,
           userId: user.id,
-          userEmail: user.email,
-        }),
+          userEmail: user.email
+        })
       });
 
       console.log("Status da resposta:", response.status);
@@ -158,7 +158,7 @@ export default function Chat() {
         user_message: userMessage,
         agent_response: agentResponse,
         timestamp: new Date().toISOString(),
-        user_id: user.id,
+        user_id: user.id
       });
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
@@ -179,8 +179,8 @@ export default function Chat() {
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Carregando conversa...</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -189,7 +189,7 @@ export default function Chat() {
         {/* Chat Header */}
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 flex items-center justify-between">
           <div>
-            <h2 className="text-white font-semibold text-lg">Assistente IA</h2>
+            <h2 className="text-white font-semibold text-lg">Assistente Estratégico de Aprendizado</h2>
             <p className="text-blue-100 text-sm">
               {isUserBlocked ? "Acesso bloqueado" : webhookUrl ? "Online - Responde instantaneamente" : "Aguardando configuração"}
             </p>
@@ -197,100 +197,100 @@ export default function Chat() {
         </div>
 
         {/* Usuário Bloqueado Alert */}
-        {isUserBlocked && (
-          <Alert variant="destructive" className="m-4">
+        {isUserBlocked &&
+        <Alert variant="destructive" className="m-4">
             <Ban className="h-4 w-4" />
             <AlertDescription>
               Seu acesso ao chat foi bloqueado pelo administrador. Entre em contato para mais informações.
             </AlertDescription>
           </Alert>
-        )}
+        }
 
         {/* Error Alert */}
-        {error && !isUserBlocked && (
-          <Alert variant="destructive" className="m-4">
+        {error && !isUserBlocked &&
+        <Alert variant="destructive" className="m-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-        )}
+        }
 
         {/* Webhook não configurada Alert */}
-        {!webhookUrl && !isUserBlocked && (
-          <Alert className="m-4 bg-yellow-50 border-yellow-200">
+        {!webhookUrl && !isUserBlocked &&
+        <Alert className="m-4 bg-yellow-50 border-yellow-200">
             <AlertCircle className="h-4 w-4 text-yellow-600" />
             <AlertDescription className="text-yellow-800">
               O chatbot ainda não foi configurado.
-              {user.role === 'admin' ? (
-                <>
+              {user.role === 'admin' ?
+            <>
                   {' '}<Link to={createPageUrl("Users")} className="font-medium underline">
                     Clique aqui para configurar o webhook
                   </Link>
-                </>
-              ) : (
-                ' Entre em contato com o administrador.'
-              )}
+                </> :
+
+            ' Entre em contato com o administrador.'
+            }
             </AlertDescription>
           </Alert>
-        )}
+        }
 
         {/* Messages Area */}
         <div className="h-[calc(100vh-350px)] overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white">
-          {allMessages.length === 0 && !isTyping ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
+          {allMessages.length === 0 && !isTyping ?
+          <div className="flex flex-col items-center justify-center h-full text-center">
               <div className={`w-20 h-20 ${isUserBlocked ? 'bg-gradient-to-br from-red-500 to-red-600' : 'bg-gradient-to-br from-blue-500 to-indigo-600'} rounded-full flex items-center justify-center mb-4 shadow-lg`}>
-                {isUserBlocked ? (
-                  <Ban className="w-10 h-10 text-white" />
-                ) : (
-                  <Bot className="w-10 h-10 text-white" />
-                )}
+                {isUserBlocked ?
+              <Ban className="w-10 h-10 text-white" /> :
+
+              <Bot className="w-10 h-10 text-white" />
+              }
               </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
                 {isUserBlocked ? "Acesso Bloqueado" : "Bem-vindo ao Chat AI!"}
               </h3>
               <p className="text-gray-600 max-w-md">
-                {isUserBlocked 
-                  ? "Você não pode enviar mensagens no momento. Entre em contato com o administrador."
-                  : webhookUrl 
-                    ? "Comece uma conversa enviando uma mensagem. O assistente está pronto para ajudar!"
-                    : "Aguarde a configuração do webhook para começar a conversar."}
+                {isUserBlocked ?
+              "Você não pode enviar mensagens no momento. Entre em contato com o administrador." :
+              webhookUrl ?
+              "Comece uma conversa enviando uma mensagem. O assistente está pronto para ajudar!" :
+              "Aguarde a configuração do webhook para começar a conversar."}
               </p>
-            </div>
-          ) : (
-            <>
-              {allMessages
-                .slice()
-                .reverse()
-                .map((msg) => (
-                  <React.Fragment key={msg.id}>
+            </div> :
+
+          <>
+              {allMessages.
+            slice().
+            reverse().
+            map((msg) =>
+            <React.Fragment key={msg.id}>
                     <ChatMessage
-                      message={msg.user_message}
-                      isUser={true}
-                      timestamp={msg.timestamp}
-                    />
-                    {msg.agent_response && (
-                      <ChatMessage
-                        message={msg.agent_response}
-                        isUser={false}
-                        timestamp={msg.timestamp}
-                      />
-                    )}
+                message={msg.user_message}
+                isUser={true}
+                timestamp={msg.timestamp} />
+
+                    {msg.agent_response &&
+              <ChatMessage
+                message={msg.agent_response}
+                isUser={false}
+                timestamp={msg.timestamp} />
+
+              }
                   </React.Fragment>
-                ))}
+            )}
               <AnimatePresence>
                 {isTyping && <TypingIndicator />}
               </AnimatePresence>
               <div ref={messagesEndRef} />
             </>
-          )}
+          }
         </div>
 
         {/* Input Area */}
         <ChatInput
           onSendMessage={handleSendMessage}
           isLoading={isTyping}
-          disabled={!webhookUrl || isUserBlocked}
-        />
+          disabled={!webhookUrl || isUserBlocked} />
+
       </div>
-    </div>
-  );
+    </div>);
+
 }
