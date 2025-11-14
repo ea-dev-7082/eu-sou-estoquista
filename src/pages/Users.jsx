@@ -1,12 +1,11 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  UserPlus,
-  Clock,
-  Shield,
-  Search,
+import { 
+  UserPlus, 
+  Clock, 
+  Shield, 
+  Search, 
   MoreVertical,
   AlertCircle,
   CheckCircle,
@@ -62,7 +61,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function Users() {
@@ -74,7 +73,8 @@ export default function Users() {
   const [success, setSuccess] = useState(null);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false);
-
+  const [autoProcessingComplete, setAutoProcessingComplete] = useState(false);
+  
   const queryClient = useQueryClient();
 
   // Verificar se usuário atual é admin
@@ -83,7 +83,7 @@ export default function Users() {
       try {
         const user = await base44.auth.me();
         setCurrentUser(user);
-
+        
         if (user.role !== 'admin') {
           setError("Apenas administradores podem acessar esta página.");
         }
@@ -122,11 +122,66 @@ export default function Users() {
     initialData: [],
   });
 
+  // Processar usuários automaticamente (bloquear expirados e excluir bloqueados há 7+ dias)
+  useEffect(() => {
+    if (!users || users.length === 0 || autoProcessingComplete || !currentUser) return;
+
+    const processUsers = async () => {
+      try {
+        const now = new Date();
+        let blockedCount = 0;
+        let deletedCount = 0;
+
+        for (const user of users) {
+          // Pular o próprio admin atual
+          if (user.id === currentUser.id) continue;
+
+          // Bloquear usuários temporários expirados que ainda estão ativos
+          if (user.is_temporary && user.access_expires_at && user.status === 'active') {
+            const expiryDate = new Date(user.access_expires_at);
+            if (expiryDate < now) {
+              await base44.entities.User.update(user.id, {
+                status: 'blocked',
+                blocked_date: now.toISOString()
+              });
+              blockedCount++;
+            }
+          }
+
+          // Excluir usuários bloqueados há mais de 7 dias
+          if (user.status === 'blocked' && user.blocked_date) {
+            const blockedDate = new Date(user.blocked_date);
+            const daysSinceBlocked = differenceInDays(now, blockedDate);
+            if (daysSinceBlocked >= 7) {
+              await base44.entities.User.delete(user.id);
+              deletedCount++;
+            }
+          }
+        }
+
+        if (blockedCount > 0 || deletedCount > 0) {
+          queryClient.invalidateQueries({ queryKey: ['users'] });
+          const messages = [];
+          if (blockedCount > 0) messages.push(`${blockedCount} usuário(s) expirado(s) bloqueado(s)`);
+          if (deletedCount > 0) messages.push(`${deletedCount} usuário(s) excluído(s)`);
+          setSuccess(`Processamento automático: ${messages.join(', ')}`);
+          setTimeout(() => setSuccess(null), 5000);
+        }
+        
+        setAutoProcessingComplete(true);
+      } catch (error) {
+        console.error("Erro ao processar usuários:", error);
+      }
+    };
+
+    processUsers();
+  }, [users, currentUser, autoProcessingComplete, queryClient]);
+
   // Salvar configuração da webhook
   const saveWebhookMutation = useMutation({
     mutationFn: async (url) => {
       const existingConfig = configs.find(c => c.config_key === 'n8n_webhook_url');
-
+      
       if (existingConfig) {
         return await base44.entities.AppConfig.update(existingConfig.id, {
           config_value: url,
@@ -200,9 +255,19 @@ export default function Users() {
   // Bloquear/desbloquear usuário
   const handleToggleUserStatus = async (user) => {
     const newStatus = user.status === 'blocked' ? 'active' : 'blocked';
+    const updateData = { status: newStatus };
+    
+    // Se estiver bloqueando, adicionar a data de bloqueio
+    if (newStatus === 'blocked') {
+      updateData.blocked_date = new Date().toISOString();
+    } else {
+      // Se estiver desbloqueando, remover a data de bloqueio
+      updateData.blocked_date = null;
+    }
+    
     await updateUserMutation.mutateAsync({
       id: user.id,
-      data: { status: newStatus }
+      data: updateData
     });
   };
 
@@ -212,21 +277,22 @@ export default function Users() {
       // Tornar permanente: remover data de expiração e código
       await updateUserMutation.mutateAsync({
         id: user.id,
-        data: {
+        data: { 
           is_temporary: false,
           access_expires_at: null,
           access_code: null,
-          status: 'active'
+          status: 'active',
+          blocked_date: null
         }
       });
     } else {
       // Tornar temporário: definir expiração para 30 dias
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 30);
-
+      
       await updateUserMutation.mutateAsync({
         id: user.id,
-        data: {
+        data: { 
           is_temporary: true,
           access_expires_at: expiryDate.toISOString(),
           status: 'active'
@@ -239,12 +305,13 @@ export default function Users() {
   const handleExtendAccess = async (user, days) => {
     const newExpiryDate = new Date();
     newExpiryDate.setDate(newExpiryDate.getDate() + days);
-
+    
     await updateUserMutation.mutateAsync({
       id: user.id,
-      data: {
+      data: { 
         access_expires_at: newExpiryDate.toISOString(),
-        status: 'active'
+        status: 'active',
+        blocked_date: null
       }
     });
   };
@@ -252,7 +319,7 @@ export default function Users() {
   // Remover usuário
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
-
+    
     // Evitar que o admin se remova
     if (userToDelete.id === currentUser.id) {
       setError("Você não pode remover sua própria conta!");
@@ -304,10 +371,10 @@ export default function Users() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gerenciar Usuários</h1>
           <p className="text-gray-500 mt-1">
-            Apenas administradores podem adicionar e remover usuários
+            Sistema automático: bloqueia usuários expirados e exclui bloqueados há 7+ dias
           </p>
         </div>
-        <Button
+        <Button 
           variant="outline"
           onClick={() => setIsConfigDialogOpen(true)}
           className="flex items-center gap-2"
@@ -324,7 +391,7 @@ export default function Users() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-
+      
       {success && (
         <Alert className="bg-green-50 border-green-200">
           <CheckCircle className="h-4 w-4 text-green-600" />
@@ -349,7 +416,7 @@ export default function Users() {
                 )}
               </CardDescription>
             </div>
-            <Button
+            <Button 
               variant="outline"
               size="sm"
               onClick={() => setIsConfigDialogOpen(true)}
@@ -375,7 +442,7 @@ export default function Users() {
             <CardTitle className="text-3xl">{users.length}</CardTitle>
           </CardHeader>
         </Card>
-
+        
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Usuários Permanentes</CardDescription>
@@ -384,7 +451,7 @@ export default function Users() {
             </CardTitle>
           </CardHeader>
         </Card>
-
+        
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Acessos Temporários</CardDescription>
@@ -393,12 +460,12 @@ export default function Users() {
             </CardTitle>
           </CardHeader>
         </Card>
-
+        
         <Card>
           <CardHeader className="pb-3">
-            <CardDescription>Acessos Expirados</CardDescription>
+            <CardDescription>Bloqueados</CardDescription>
             <CardTitle className="text-3xl text-red-600">
-              {users.filter(u => isAccessExpired(u)).length}
+              {users.filter(u => u.status === 'blocked').length}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -455,15 +522,18 @@ export default function Users() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {isAccessExpired(user) ? (
-                        <Badge variant="destructive">
-                          <XCircle className="w-3 h-3 mr-1" />
-                          Expirado
-                        </Badge>
-                      ) : user.status === 'blocked' ? (
-                        <Badge variant="secondary">
-                          Bloqueado
-                        </Badge>
+                      {user.status === 'blocked' ? (
+                        <div>
+                          <Badge variant="destructive">
+                            <XCircle className="w-3 h-3 mr-1" />
+                            Bloqueado
+                          </Badge>
+                          {user.blocked_date && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {differenceInDays(new Date(), new Date(user.blocked_date))} dias
+                            </p>
+                          )}
+                        </div>
                       ) : (
                         <Badge className="bg-green-100 text-green-800 border-green-200">
                           <CheckCircle className="w-3 h-3 mr-1" />
@@ -511,14 +581,14 @@ export default function Users() {
                           <DropdownMenuItem onClick={() => handleToggleUserStatus(user)}>
                             {user.status === 'blocked' ? 'Desbloquear' : 'Bloquear'} Usuário
                           </DropdownMenuItem>
-                          <DropdownMenuItem
+                          <DropdownMenuItem 
                             onClick={() => setSelectedUser(user)}
                             className="text-blue-600"
                           >
                             Ver Detalhes
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem
+                          <DropdownMenuItem 
                             onClick={() => setUserToDelete(user)}
                             className="text-red-600"
                             disabled={user.id === currentUser.id}
@@ -590,8 +660,8 @@ export default function Users() {
                 {`{ "response": "texto da resposta" }`}
               </code>
             </div>
-            <Button
-              onClick={handleSaveWebhook}
+            <Button 
+              onClick={handleSaveWebhook} 
               className="w-full"
               disabled={saveWebhookMutation.isLoading}
             >
@@ -646,8 +716,16 @@ export default function Users() {
                     </p>
                   </div>
                 )}
+                {selectedUser.blocked_date && (
+                  <div>
+                    <Label className="text-gray-500">Bloqueado há</Label>
+                    <p className="font-medium">
+                      {differenceInDays(new Date(), new Date(selectedUser.blocked_date))} dias
+                    </p>
+                  </div>
+                )}
               </div>
-
+              
               {selectedUser.notes && (
                 <div>
                   <Label className="text-gray-500">Observações</Label>
@@ -658,7 +736,7 @@ export default function Users() {
               )}
 
               <div className="pt-4 flex gap-3 flex-wrap">
-                <Button
+                <Button 
                   onClick={() => {
                     handleToggleAccessType(selectedUser);
                     setSelectedUser(null);
@@ -668,9 +746,9 @@ export default function Users() {
                   <RefreshCw className="w-4 h-4 mr-2" />
                   {selectedUser.is_temporary ? 'Tornar Permanente' : 'Tornar Temporário'}
                 </Button>
-                {selectedUser.is_temporary && !isAccessExpired(selectedUser) && (
+                {selectedUser.is_temporary && selectedUser.status !== 'blocked' && (
                   <>
-                    <Button
+                    <Button 
                       onClick={() => {
                         handleExtendAccess(selectedUser, 7);
                         setSelectedUser(null);
@@ -679,7 +757,7 @@ export default function Users() {
                     >
                       Estender 7 dias
                     </Button>
-                    <Button
+                    <Button 
                       onClick={() => {
                         handleExtendAccess(selectedUser, 30);
                         setSelectedUser(null);
@@ -690,7 +768,7 @@ export default function Users() {
                     </Button>
                   </>
                 )}
-                <Button
+                <Button 
                   onClick={() => {
                     handleToggleUserStatus(selectedUser);
                     setSelectedUser(null);
@@ -701,7 +779,7 @@ export default function Users() {
                   {selectedUser.status === 'blocked' ? 'Desbloquear' : 'Bloquear'} Usuário
                 </Button>
                 {selectedUser.id !== currentUser.id && (
-                  <Button
+                  <Button 
                     onClick={() => {
                       setUserToDelete(selectedUser);
                       setSelectedUser(null);
