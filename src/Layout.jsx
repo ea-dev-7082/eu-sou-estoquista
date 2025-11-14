@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { LogOut, User, MessageSquare } from "lucide-react";
+import { LogOut, User, MessageSquare, Users as UsersIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,14 +50,40 @@ export default function Layout({ children, currentPageName }) {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <MessageSquare className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <MessageSquare className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">Chat AI</h1>
+                  <p className="text-xs text-gray-500">Assistente Inteligente</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Chat AI</h1>
-                <p className="text-xs text-gray-500">Assistente Inteligente</p>
-              </div>
+
+              {/* Navigation */}
+              <nav className="hidden md:flex items-center gap-2">
+                <Link to={createPageUrl("Chat")}>
+                  <Button 
+                    variant={currentPageName === "Chat" ? "default" : "ghost"}
+                    className="flex items-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Chat
+                  </Button>
+                </Link>
+                {user?.role === 'admin' && (
+                  <Link to={createPageUrl("Users")}>
+                    <Button 
+                      variant={currentPageName === "Users" ? "default" : "ghost"}
+                      className="flex items-center gap-2"
+                    >
+                      <UsersIcon className="w-4 h-4" />
+                      Usuários
+                    </Button>
+                  </Link>
+                )}
+              </nav>
             </div>
 
             {/* User Menu */}
@@ -80,6 +108,13 @@ export default function Layout({ children, currentPageName }) {
                     <User className="w-4 h-4 mr-2" />
                     {user.email}
                   </DropdownMenuItem>
+                  {user.role === 'admin' && (
+                    <DropdownMenuItem disabled>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        Administrador
+                      </span>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
                     <LogOut className="w-4 h-4 mr-2" />
