@@ -13,7 +13,8 @@ import {
   Calendar,
   Settings,
   Save,
-  Trash2
+  Trash2,
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -202,6 +203,35 @@ export default function Users() {
       id: user.id,
       data: { status: newStatus }
     });
+  };
+
+  // Alternar tipo de acesso (temporário/permanente)
+  const handleToggleAccessType = async (user) => {
+    if (user.is_temporary) {
+      // Tornar permanente: remover data de expiração e código
+      await updateUserMutation.mutateAsync({
+        id: user.id,
+        data: { 
+          is_temporary: false,
+          access_expires_at: null,
+          access_code: null,
+          status: 'active'
+        }
+      });
+    } else {
+      // Tornar temporário: definir expiração para 30 dias
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30);
+      
+      await updateUserMutation.mutateAsync({
+        id: user.id,
+        data: { 
+          is_temporary: true,
+          access_expires_at: expiryDate.toISOString(),
+          status: 'active'
+        }
+      });
+    }
   };
 
   // Estender acesso temporário
@@ -467,6 +497,11 @@ export default function Users() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleToggleAccessType(user)}>
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            {user.is_temporary ? 'Tornar Permanente' : 'Tornar Temporário'}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           {user.is_temporary && (
                             <>
                               <DropdownMenuItem onClick={() => handleExtendAccess(user, 7)}>
@@ -628,6 +663,16 @@ export default function Users() {
               )}
 
               <div className="pt-4 flex gap-3 flex-wrap">
+                <Button 
+                  onClick={() => {
+                    handleToggleAccessType(selectedUser);
+                    setSelectedUser(null);
+                  }}
+                  variant="outline"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  {selectedUser.is_temporary ? 'Tornar Permanente' : 'Tornar Temporário'}
+                </Button>
                 {selectedUser.is_temporary && !isAccessExpired(selectedUser) && (
                   <>
                     <Button 
