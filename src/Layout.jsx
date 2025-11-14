@@ -10,8 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger } from
+"@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Layout({ children, currentPageName }) {
@@ -35,12 +35,12 @@ export default function Layout({ children, currentPageName }) {
 
   const getInitials = (name) => {
     if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+    return name.
+    split(" ").
+    map((n) => n[0]).
+    join("").
+    toUpperCase().
+    slice(0, 2);
   };
 
   return (
@@ -56,7 +56,7 @@ export default function Layout({ children, currentPageName }) {
                   <MessageSquare className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">Chat AI</h1>
+                  <h1 className="text-xl font-bold text-gray-900">Programa Formação</h1>
                   <p className="text-xs text-gray-500">Assistente Inteligente</p>
                 </div>
               </div>
@@ -64,31 +64,31 @@ export default function Layout({ children, currentPageName }) {
               {/* Navigation */}
               <nav className="hidden md:flex items-center gap-2">
                 <Link to={createPageUrl("Chat")}>
-                  <Button 
+                  <Button
                     variant={currentPageName === "Chat" ? "default" : "ghost"}
-                    className="flex items-center gap-2"
-                  >
+                    className="flex items-center gap-2">
+
                     <MessageSquare className="w-4 h-4" />
                     Chat
                   </Button>
                 </Link>
-                {user?.role === 'admin' && (
-                  <Link to={createPageUrl("Users")}>
-                    <Button 
-                      variant={currentPageName === "Users" ? "default" : "ghost"}
-                      className="flex items-center gap-2"
-                    >
+                {user?.role === 'admin' &&
+                <Link to={createPageUrl("Users")}>
+                    <Button
+                    variant={currentPageName === "Users" ? "default" : "ghost"}
+                    className="flex items-center gap-2">
+
                       <UsersIcon className="w-4 h-4" />
                       Usuários
                     </Button>
                   </Link>
-                )}
+                }
               </nav>
             </div>
 
             {/* User Menu */}
-            {user && (
-              <DropdownMenu>
+            {user &&
+            <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-2 hover:bg-gray-100">
                     <Avatar className="w-8 h-8">
@@ -108,13 +108,13 @@ export default function Layout({ children, currentPageName }) {
                     <User className="w-4 h-4 mr-2" />
                     {user.email}
                   </DropdownMenuItem>
-                  {user.role === 'admin' && (
-                    <DropdownMenuItem disabled>
+                  {user.role === 'admin' &&
+                <DropdownMenuItem disabled>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                         Administrador
                       </span>
                     </DropdownMenuItem>
-                  )}
+                }
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
                     <LogOut className="w-4 h-4 mr-2" />
@@ -122,7 +122,7 @@ export default function Layout({ children, currentPageName }) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            )}
+            }
           </div>
         </div>
       </header>
@@ -131,6 +131,6 @@ export default function Layout({ children, currentPageName }) {
       <main className="container mx-auto px-4 py-6">
         {children}
       </main>
-    </div>
-  );
+    </div>);
+
 }
