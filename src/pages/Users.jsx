@@ -1,11 +1,12 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  UserPlus, 
-  Clock, 
-  Shield, 
-  Search, 
+import {
+  UserPlus,
+  Clock,
+  Shield,
+  Search,
   MoreVertical,
   AlertCircle,
   CheckCircle,
@@ -73,7 +74,7 @@ export default function Users() {
   const [success, setSuccess] = useState(null);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false);
-  
+
   const queryClient = useQueryClient();
 
   // Verificar se usuário atual é admin
@@ -82,7 +83,7 @@ export default function Users() {
       try {
         const user = await base44.auth.me();
         setCurrentUser(user);
-        
+
         if (user.role !== 'admin') {
           setError("Apenas administradores podem acessar esta página.");
         }
@@ -125,7 +126,7 @@ export default function Users() {
   const saveWebhookMutation = useMutation({
     mutationFn: async (url) => {
       const existingConfig = configs.find(c => c.config_key === 'n8n_webhook_url');
-      
+
       if (existingConfig) {
         return await base44.entities.AppConfig.update(existingConfig.id, {
           config_value: url,
@@ -211,7 +212,7 @@ export default function Users() {
       // Tornar permanente: remover data de expiração e código
       await updateUserMutation.mutateAsync({
         id: user.id,
-        data: { 
+        data: {
           is_temporary: false,
           access_expires_at: null,
           access_code: null,
@@ -222,10 +223,10 @@ export default function Users() {
       // Tornar temporário: definir expiração para 30 dias
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 30);
-      
+
       await updateUserMutation.mutateAsync({
         id: user.id,
-        data: { 
+        data: {
           is_temporary: true,
           access_expires_at: expiryDate.toISOString(),
           status: 'active'
@@ -238,10 +239,10 @@ export default function Users() {
   const handleExtendAccess = async (user, days) => {
     const newExpiryDate = new Date();
     newExpiryDate.setDate(newExpiryDate.getDate() + days);
-    
+
     await updateUserMutation.mutateAsync({
       id: user.id,
-      data: { 
+      data: {
         access_expires_at: newExpiryDate.toISOString(),
         status: 'active'
       }
@@ -251,7 +252,7 @@ export default function Users() {
   // Remover usuário
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
-    
+
     // Evitar que o admin se remova
     if (userToDelete.id === currentUser.id) {
       setError("Você não pode remover sua própria conta!");
@@ -306,20 +307,14 @@ export default function Users() {
             Apenas administradores podem adicionar e remover usuários
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button 
-            variant="outline"
-            onClick={() => setIsConfigDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Settings className="w-4 h-4" />
-            Configurar Webhook
-          </Button>
-          <Button className="bg-gradient-to-r from-blue-500 to-indigo-600">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Convidar Usuário
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          onClick={() => setIsConfigDialogOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <Settings className="w-4 h-4" />
+          Configurar Webhook
+        </Button>
       </div>
 
       {/* Alertas */}
@@ -329,7 +324,7 @@ export default function Users() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      
+
       {success && (
         <Alert className="bg-green-50 border-green-200">
           <CheckCircle className="h-4 w-4 text-green-600" />
@@ -354,7 +349,7 @@ export default function Users() {
                 )}
               </CardDescription>
             </div>
-            <Button 
+            <Button
               variant="outline"
               size="sm"
               onClick={() => setIsConfigDialogOpen(true)}
@@ -380,7 +375,7 @@ export default function Users() {
             <CardTitle className="text-3xl">{users.length}</CardTitle>
           </CardHeader>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Usuários Permanentes</CardDescription>
@@ -389,7 +384,7 @@ export default function Users() {
             </CardTitle>
           </CardHeader>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Acessos Temporários</CardDescription>
@@ -398,7 +393,7 @@ export default function Users() {
             </CardTitle>
           </CardHeader>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Acessos Expirados</CardDescription>
@@ -516,14 +511,14 @@ export default function Users() {
                           <DropdownMenuItem onClick={() => handleToggleUserStatus(user)}>
                             {user.status === 'blocked' ? 'Desbloquear' : 'Bloquear'} Usuário
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => setSelectedUser(user)}
                             className="text-blue-600"
                           >
                             Ver Detalhes
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => setUserToDelete(user)}
                             className="text-red-600"
                             disabled={user.id === currentUser.id}
@@ -595,8 +590,8 @@ export default function Users() {
                 {`{ "response": "texto da resposta" }`}
               </code>
             </div>
-            <Button 
-              onClick={handleSaveWebhook} 
+            <Button
+              onClick={handleSaveWebhook}
               className="w-full"
               disabled={saveWebhookMutation.isLoading}
             >
@@ -652,7 +647,7 @@ export default function Users() {
                   </div>
                 )}
               </div>
-              
+
               {selectedUser.notes && (
                 <div>
                   <Label className="text-gray-500">Observações</Label>
@@ -663,7 +658,7 @@ export default function Users() {
               )}
 
               <div className="pt-4 flex gap-3 flex-wrap">
-                <Button 
+                <Button
                   onClick={() => {
                     handleToggleAccessType(selectedUser);
                     setSelectedUser(null);
@@ -675,7 +670,7 @@ export default function Users() {
                 </Button>
                 {selectedUser.is_temporary && !isAccessExpired(selectedUser) && (
                   <>
-                    <Button 
+                    <Button
                       onClick={() => {
                         handleExtendAccess(selectedUser, 7);
                         setSelectedUser(null);
@@ -684,7 +679,7 @@ export default function Users() {
                     >
                       Estender 7 dias
                     </Button>
-                    <Button 
+                    <Button
                       onClick={() => {
                         handleExtendAccess(selectedUser, 30);
                         setSelectedUser(null);
@@ -695,7 +690,7 @@ export default function Users() {
                     </Button>
                   </>
                 )}
-                <Button 
+                <Button
                   onClick={() => {
                     handleToggleUserStatus(selectedUser);
                     setSelectedUser(null);
@@ -706,7 +701,7 @@ export default function Users() {
                   {selectedUser.status === 'blocked' ? 'Desbloquear' : 'Bloquear'} Usuário
                 </Button>
                 {selectedUser.id !== currentUser.id && (
-                  <Button 
+                  <Button
                     onClick={() => {
                       setUserToDelete(selectedUser);
                       setSelectedUser(null);
