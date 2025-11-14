@@ -1,20 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Settings, Bot } from "lucide-react";
+import { AlertCircle, Bot } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 import ChatMessage from "../components/chat/ChatMessage";
 import ChatInput from "../components/chat/ChatInput";
@@ -25,7 +17,6 @@ export default function Chat() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [webhookUrl, setWebhookUrl] = useState("");
-  const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [tempMessages, setTempMessages] = useState([]);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
@@ -36,11 +27,6 @@ export default function Chat() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        
-        // Carregar webhook URL salva
-        if (currentUser.webhook_url) {
-          setWebhookUrl(currentUser.webhook_url);
-        }
       } catch (error) {
         console.error("Erro ao buscar usuário:", error);
         base44.auth.redirectToLogin();
@@ -48,6 +34,25 @@ export default function Chat() {
     };
     fetchUser();
   }, []);
+
+  // Buscar configuração da webhook (global)
+  const { data: configs } = useQuery({
+    queryKey: ['appConfig'],
+    queryFn: async () => {
+      const allConfigs = await base44.entities.AppConfig.list();
+      return allConfigs;
+    },
+    enabled: !!user,
+    initialData: [],
+  });
+
+  // Atualizar webhook URL quando configs carregarem
+  useEffect(() => {
+    const webhookConfig = configs.find(c => c.config_key === 'n8n_webhook_url');
+    if (webhookConfig) {
+      setWebhookUrl(webhookConfig.config_value);
+    }
+  }, [configs]);
 
   // Buscar histórico de mensagens
   const { data: messages, isLoading } = useQuery({
@@ -81,22 +86,10 @@ export default function Chat() {
     },
   });
 
-  // Salvar webhook URL no usuário
-  const saveWebhookUrl = async () => {
-    try {
-      await base44.auth.updateMe({ webhook_url: webhookUrl });
-      setIsConfigOpen(false);
-      setError(null);
-    } catch (error) {
-      setError("Erro ao salvar configuração. Tente novamente.");
-    }
-  };
-
   // Enviar mensagem para o n8n
   const handleSendMessage = async (userMessage) => {
     if (!webhookUrl) {
-      setError("Configure o Webhook URL do n8n antes de enviar mensagens.");
-      setIsConfigOpen(true);
+      setError("O webhook do n8n não foi configurado. Entre em contato com o administrador.");
       return;
     }
 
@@ -162,7 +155,7 @@ export default function Chat() {
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
       setError(
-        `Erro: ${error.message}. Verifique se o Webhook URL está correto e se o n8n está respondendo corretamente.`
+        `Erro: ${error.message}. Entre em contato com o administrador.`
       );
       setTempMessages([]);
     } finally {
@@ -189,48 +182,10 @@ export default function Chat() {
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 flex items-center justify-between">
           <div>
             <h2 className="text-white font-semibold text-lg">Assistente IA</h2>
-            <p className="text-blue-100 text-sm">Online - Responde instantaneamente</p>
+            <p className="text-blue-100 text-sm">
+              {webhookUrl ? "Online - Responde instantaneamente" : "Aguardando configuração"}
+            </p>
           </div>
-          <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                <Settings className="w-5 h-5" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Configurações do n8n</DialogTitle>
-                <DialogDescription>
-                  Configure o Webhook URL do seu agente n8n. O n8n deve retornar um JSON com a chave "response", "message" ou "output".
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="webhook">Webhook URL do n8n</Label>
-                  <Input
-                    id="webhook"
-                    placeholder="https://seu.n8n.url/webhook/id-do-agente"
-                    value={webhookUrl}
-                    onChange={(e) => setWebhookUrl(e.target.value)}
-                  />
-                  <p className="text-xs text-gray-500">
-                    Cole aqui a URL do webhook do seu workflow n8n
-                  </p>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-xs text-blue-800 font-medium mb-1">
-                    ⚠️ Formato da resposta do n8n:
-                  </p>
-                  <code className="text-xs text-blue-700 block">
-                    {`{ "response": "texto da resposta" }`}
-                  </code>
-                </div>
-                <Button onClick={saveWebhookUrl} className="w-full">
-                  Salvar Configuração
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
 
         {/* Error Alert */}
@@ -238,6 +193,25 @@ export default function Chat() {
           <Alert variant="destructive" className="m-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Webhook não configurada Alert */}
+        {!webhookUrl && (
+          <Alert className="m-4 bg-yellow-50 border-yellow-200">
+            <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-yellow-800">
+              O chatbot ainda não foi configurado.
+              {user.role === 'admin' ? (
+                <>
+                  {' '}<Link to={createPageUrl("Users")} className="font-medium underline">
+                    Clique aqui para configurar o webhook
+                  </Link>
+                </>
+              ) : (
+                ' Entre em contato com o administrador.'
+              )}
+            </AlertDescription>
           </Alert>
         )}
 
@@ -254,7 +228,7 @@ export default function Chat() {
               <p className="text-gray-600 max-w-md">
                 {webhookUrl 
                   ? "Comece uma conversa enviando uma mensagem. O assistente está pronto para ajudar!"
-                  : "Configure o Webhook URL do n8n clicando no ícone de configurações acima."}
+                  : "Aguarde a configuração do webhook para começar a conversar."}
               </p>
             </div>
           ) : (
