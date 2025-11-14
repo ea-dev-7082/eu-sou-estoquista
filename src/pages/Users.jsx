@@ -10,7 +10,9 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  Calendar
+  Calendar,
+  Settings,
+  Save
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,25 +47,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function Users() {
   const [currentUser, setCurrentUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -85,12 +80,62 @@ export default function Users() {
     fetchCurrentUser();
   }, []);
 
+  // Buscar configuração da webhook
+  const { data: configs } = useQuery({
+    queryKey: ['appConfig'],
+    queryFn: async () => {
+      const allConfigs = await base44.entities.AppConfig.list();
+      return allConfigs;
+    },
+    enabled: currentUser?.role === 'admin',
+    initialData: [],
+  });
+
+  // Atualizar webhook URL quando configs carregarem
+  useEffect(() => {
+    const webhookConfig = configs.find(c => c.config_key === 'n8n_webhook_url');
+    if (webhookConfig) {
+      setWebhookUrl(webhookConfig.config_value);
+    }
+  }, [configs]);
+
   // Buscar todos os usuários
   const { data: users, isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: () => base44.entities.User.list('-created_date'),
     enabled: currentUser?.role === 'admin',
     initialData: [],
+  });
+
+  // Salvar configuração da webhook
+  const saveWebhookMutation = useMutation({
+    mutationFn: async (url) => {
+      const existingConfig = configs.find(c => c.config_key === 'n8n_webhook_url');
+      
+      if (existingConfig) {
+        return await base44.entities.AppConfig.update(existingConfig.id, {
+          config_value: url,
+          updated_by: currentUser.email
+        });
+      } else {
+        return await base44.entities.AppConfig.create({
+          config_key: 'n8n_webhook_url',
+          config_value: url,
+          description: 'URL do webhook do n8n para o chatbot',
+          updated_by: currentUser.email
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appConfig'] });
+      setSuccess("Webhook configurada com sucesso!");
+      setIsConfigDialogOpen(false);
+      setTimeout(() => setSuccess(null), 3000);
+    },
+    onError: (error) => {
+      setError("Erro ao salvar webhook: " + error.message);
+      setTimeout(() => setError(null), 5000);
+    }
   });
 
   // Atualizar usuário
@@ -122,11 +167,6 @@ export default function Users() {
     return new Date(user.access_expires_at) < new Date();
   };
 
-  // Gerar código de acesso aleatório
-  const generateAccessCode = () => {
-    return Math.random().toString(36).substring(2, 10).toUpperCase();
-  };
-
   // Bloquear/desbloquear usuário
   const handleToggleUserStatus = async (user) => {
     const newStatus = user.status === 'blocked' ? 'active' : 'blocked';
@@ -148,6 +188,15 @@ export default function Users() {
         status: 'active'
       }
     });
+  };
+
+  // Salvar webhook
+  const handleSaveWebhook = async () => {
+    if (!webhookUrl.trim()) {
+      setError("Por favor, insira uma URL válida.");
+      return;
+    }
+    await saveWebhookMutation.mutateAsync(webhookUrl);
   };
 
   if (!currentUser || currentUser.role !== 'admin') {
@@ -181,13 +230,23 @@ export default function Users() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gerenciar Usuários</h1>
           <p className="text-gray-500 mt-1">
-            Controle de acessos e usuários temporários
+            Controle de acessos e configurações do sistema
           </p>
         </div>
-        <Button className="bg-gradient-to-r from-blue-500 to-indigo-600">
-          <UserPlus className="w-4 h-4 mr-2" />
-          Convidar Usuário
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            variant="outline"
+            onClick={() => setIsConfigDialogOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Settings className="w-4 h-4" />
+            Configurar Webhook
+          </Button>
+          <Button className="bg-gradient-to-r from-blue-500 to-indigo-600">
+            <UserPlus className="w-4 h-4 mr-2" />
+            Convidar Usuário
+          </Button>
+        </div>
       </div>
 
       {/* Alertas */}
@@ -204,6 +263,41 @@ export default function Users() {
           <AlertDescription className="text-green-800">{success}</AlertDescription>
         </Alert>
       )}
+
+      {/* Configuração Webhook Card */}
+      <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Configuração do Webhook N8N
+              </CardTitle>
+              <CardDescription className="mt-1">
+                {webhookUrl ? (
+                  <span className="text-green-700 font-medium">✓ Webhook configurada</span>
+                ) : (
+                  <span className="text-orange-700 font-medium">⚠ Webhook não configurada</span>
+                )}
+              </CardDescription>
+            </div>
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={() => setIsConfigDialogOpen(true)}
+            >
+              Editar
+            </Button>
+          </div>
+        </CardHeader>
+        {webhookUrl && (
+          <CardContent>
+            <p className="text-sm text-gray-600 font-mono bg-white/50 p-3 rounded-lg truncate">
+              {webhookUrl}
+            </p>
+          </CardContent>
+        )}
+      </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -359,6 +453,48 @@ export default function Users() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialog de Configuração da Webhook */}
+      <Dialog open={isConfigDialogOpen} onOpenChange={setIsConfigDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configurar Webhook do N8N</DialogTitle>
+            <DialogDescription>
+              Configure a URL do webhook que todos os usuários usarão para conversar com o agente.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="webhook">Webhook URL do n8n</Label>
+              <Input
+                id="webhook"
+                placeholder="https://seu.n8n.url/webhook/id-do-agente"
+                value={webhookUrl}
+                onChange={(e) => setWebhookUrl(e.target.value)}
+              />
+              <p className="text-xs text-gray-500">
+                Esta URL será usada por todos os usuários do sistema
+              </p>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs text-blue-800 font-medium mb-1">
+                ℹ️ Formato esperado da resposta:
+              </p>
+              <code className="text-xs text-blue-700 block">
+                {`{ "response": "texto da resposta" }`}
+              </code>
+            </div>
+            <Button 
+              onClick={handleSaveWebhook} 
+              className="w-full"
+              disabled={saveWebhookMutation.isLoading}
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {saveWebhookMutation.isLoading ? 'Salvando...' : 'Salvar Configuração'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog de Detalhes do Usuário */}
       <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
