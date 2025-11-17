@@ -259,6 +259,7 @@ export default function Chat() {
           <>
               {allMessages.
             slice().
+            reverse().
             map((msg) =>
             <React.Fragment key={msg.id}>
                     <ChatMessage
