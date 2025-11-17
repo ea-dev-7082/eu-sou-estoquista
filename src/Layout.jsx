@@ -12,15 +12,15 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger } from
+"@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  DialogTitle } from
+"@/components/ui/dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useMutation } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -79,12 +79,12 @@ export default function Layout({ children, currentPageName }) {
 
   const getInitials = (name) => {
     if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+    return name.
+    split(" ").
+    map((n) => n[0]).
+    join("").
+    toUpperCase().
+    slice(0, 2);
   };
 
   return (
@@ -100,7 +100,7 @@ export default function Layout({ children, currentPageName }) {
                   <MessageSquare className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">Chat AI</h1>
+                  <h1 className="text-xl font-bold text-gray-900">Liderança Estratégica</h1>
                   <p className="text-xs text-gray-500">Assistente Inteligente</p>
                 </div>
               </div>
@@ -108,31 +108,31 @@ export default function Layout({ children, currentPageName }) {
               {/* Navigation */}
               <nav className="hidden md:flex items-center gap-2">
                 <Link to={createPageUrl("Chat")}>
-                  <Button 
+                  <Button
                     variant={currentPageName === "Chat" ? "default" : "ghost"}
-                    className="flex items-center gap-2"
-                  >
+                    className="flex items-center gap-2">
+
                     <MessageSquare className="w-4 h-4" />
                     Chat
                   </Button>
                 </Link>
-                {user?.role === 'admin' && (
-                  <Link to={createPageUrl("Users")}>
-                    <Button 
-                      variant={currentPageName === "Users" ? "default" : "ghost"}
-                      className="flex items-center gap-2"
-                    >
+                {user?.role === 'admin' &&
+                <Link to={createPageUrl("Users")}>
+                    <Button
+                    variant={currentPageName === "Users" ? "default" : "ghost"}
+                    className="flex items-center gap-2">
+
                       <UsersIcon className="w-4 h-4" />
                       Usuários
                     </Button>
                   </Link>
-                )}
+                }
               </nav>
             </div>
 
             {/* User Menu */}
-            {user && (
-              <DropdownMenu>
+            {user &&
+            <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-2 hover:bg-gray-100">
                     <Avatar className="w-8 h-8">
@@ -152,13 +152,13 @@ export default function Layout({ children, currentPageName }) {
                     <User className="w-4 h-4 mr-2" />
                     {user.email}
                   </DropdownMenuItem>
-                  {user.role === 'admin' && (
-                    <DropdownMenuItem disabled>
+                  {user.role === 'admin' &&
+                <DropdownMenuItem disabled>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                         Administrador
                       </span>
                     </DropdownMenuItem>
-                  )}
+                }
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setIsProfileOpen(true)} className="cursor-pointer">
                     <Edit className="w-4 h-4 mr-2" />
@@ -170,7 +170,7 @@ export default function Layout({ children, currentPageName }) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            )}
+            }
           </div>
         </div>
       </header>
@@ -191,19 +191,19 @@ export default function Layout({ children, currentPageName }) {
           </DialogHeader>
           
           <div className="space-y-4 pt-4">
-            {success && (
-              <Alert className="bg-green-50 border-green-200">
+            {success &&
+            <Alert className="bg-green-50 border-green-200">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800">{success}</AlertDescription>
               </Alert>
-            )}
+            }
             
-            {error && (
-              <Alert variant="destructive">
+            {error &&
+            <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
-            )}
+            }
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -211,8 +211,8 @@ export default function Layout({ children, currentPageName }) {
                 id="email"
                 value={user?.email || ''}
                 disabled
-                className="bg-gray-50"
-              />
+                className="bg-gray-50" />
+
             </div>
 
             <div className="space-y-2">
@@ -221,20 +221,20 @@ export default function Layout({ children, currentPageName }) {
                 id="fullName"
                 value={newFullName}
                 onChange={(e) => setNewFullName(e.target.value)}
-                placeholder="Digite seu nome completo"
-              />
+                placeholder="Digite seu nome completo" />
+
             </div>
 
-            <Button 
-              onClick={handleSaveName} 
+            <Button
+              onClick={handleSaveName}
               className="w-full"
-              disabled={updateProfileMutation.isLoading}
-            >
+              disabled={updateProfileMutation.isLoading}>
+
               {updateProfileMutation.isLoading ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 }
