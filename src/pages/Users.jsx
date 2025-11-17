@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,7 +15,8 @@ import {
   Settings,
   Save,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Edit // Added Edit icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,6 +70,8 @@ export default function Users() {
   const [currentUser, setCurrentUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
+  const [editingName, setEditingName] = useState(false); // New state for editing full name
+  const [newFullName, setNewFullName] = useState(""); // New state for edited full name
   const [userToDelete, setUserToDelete] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -316,6 +320,28 @@ export default function Users() {
     });
   };
 
+  // Salvar nome completo
+  const handleSaveFullName = async () => {
+    if (!selectedUser || !newFullName.trim()) {
+      setError("Por favor, insira um nome válido.");
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    try {
+      await updateUserMutation.mutateAsync({
+        id: selectedUser.id,
+        data: { full_name: newFullName.trim() }
+      });
+      // Update the selectedUser state directly to reflect the change immediately in the dialog
+      setSelectedUser(prev => ({ ...prev, full_name: newFullName.trim() }));
+      setEditingName(false);
+    } catch (err) {
+      // Error handled by mutation's onError
+    }
+  };
+
+
   // Remover usuário
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
@@ -335,6 +361,7 @@ export default function Users() {
   const handleSaveWebhook = async () => {
     if (!webhookUrl.trim()) {
       setError("Por favor, insira uma URL válida.");
+      setTimeout(() => setError(null), 3000);
       return;
     }
     await saveWebhookMutation.mutateAsync(webhookUrl);
@@ -582,7 +609,11 @@ export default function Users() {
                             {user.status === 'blocked' ? 'Desbloquear' : 'Bloquear'} Usuário
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => setSelectedUser(user)}
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setNewFullName(user.full_name || ''); // Initialize newFullName
+                              setEditingName(false); // Ensure editing mode is off by default
+                            }}
                             className="text-blue-600"
                           >
                             Ver Detalhes
@@ -673,7 +704,11 @@ export default function Users() {
       </Dialog>
 
       {/* Dialog de Detalhes do Usuário */}
-      <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
+      <Dialog open={!!selectedUser} onOpenChange={() => {
+        setSelectedUser(null);
+        setEditingName(false); // Reset editing state on close
+        setNewFullName(""); // Clear full name on close
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Detalhes do Usuário</DialogTitle>
@@ -684,9 +719,37 @@ export default function Users() {
           {selectedUser && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className="col-span-2">
                   <Label className="text-gray-500">Nome Completo</Label>
-                  <p className="font-medium">{selectedUser.full_name || 'Não informado'}</p>
+                  {editingName ? (
+                    <div className="flex gap-2 mt-1">
+                      <Input
+                        value={newFullName}
+                        onChange={(e) => setNewFullName(e.target.value)}
+                        placeholder="Digite o nome completo"
+                      />
+                      <Button size="sm" onClick={handleSaveFullName}>
+                        <Save className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => {
+                        setEditingName(false);
+                        setNewFullName(selectedUser.full_name || ''); // Revert to original on cancel
+                      }}>
+                        Cancelar
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="font-medium">{selectedUser.full_name || 'Não informado'}</p>
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        onClick={() => setEditingName(true)}
+                      >
+                        <Edit className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <Label className="text-gray-500">Email</Label>
@@ -740,6 +803,7 @@ export default function Users() {
                   onClick={() => {
                     handleToggleAccessType(selectedUser);
                     setSelectedUser(null);
+                    setEditingName(false); // Reset editing state
                   }}
                   variant="outline"
                 >
@@ -752,6 +816,7 @@ export default function Users() {
                       onClick={() => {
                         handleExtendAccess(selectedUser, 7);
                         setSelectedUser(null);
+                        setEditingName(false); // Reset editing state
                       }}
                       variant="outline"
                     >
@@ -761,6 +826,7 @@ export default function Users() {
                       onClick={() => {
                         handleExtendAccess(selectedUser, 30);
                         setSelectedUser(null);
+                        setEditingName(false); // Reset editing state
                       }}
                       variant="outline"
                     >
@@ -772,6 +838,7 @@ export default function Users() {
                   onClick={() => {
                     handleToggleUserStatus(selectedUser);
                     setSelectedUser(null);
+                    setEditingName(false); // Reset editing state
                   }}
                   variant={selectedUser.status === 'blocked' ? 'default' : 'destructive'}
                   className="ml-auto"
@@ -783,6 +850,7 @@ export default function Users() {
                     onClick={() => {
                       setUserToDelete(selectedUser);
                       setSelectedUser(null);
+                      setEditingName(false); // Reset editing state
                     }}
                     variant="outline"
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"

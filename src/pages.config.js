@@ -1,6 +1,6 @@
 import Chat from './pages/Chat';
 import Users from './pages/Users';
-import Layout from './Layout.jsx';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -11,5 +11,5 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "Chat",
     Pages: PAGES,
-    Layout: Layout,
+    Layout: __Layout,
 };
