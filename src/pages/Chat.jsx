@@ -61,7 +61,7 @@ export default function Chat() {
       if (!user) return [];
       return await base44.entities.Message.filter(
         { user_id: user.id },
-        "-created_date",
+        "created_date",
         100
       );
     },
@@ -257,10 +257,7 @@ export default function Chat() {
             </div> :
 
           <>
-              {allMessages.
-            slice().
-            reverse().
-            map((msg) =>
+              {allMessages.map((msg) =>
             <React.Fragment key={msg.id}>
                     <ChatMessage
                 message={msg.user_message}
