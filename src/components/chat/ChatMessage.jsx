@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Bot, User } from "lucide-react";
 import { motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 
 export default function ChatMessage({ message, isUser, timestamp }) {
   return (
@@ -36,7 +37,31 @@ export default function ChatMessage({ message, isUser, timestamp }) {
               : "bg-white text-gray-800 rounded-tl-sm border border-gray-200"
           }`}
         >
-          <p className="text-sm whitespace-pre-wrap break-words">{message}</p>
+          <div className="text-sm whitespace-pre-wrap break-words prose prose-sm max-w-none">
+            <ReactMarkdown
+              components={{
+                h1: ({node, ...props}) => <h1 className={`text-2xl font-bold mb-2 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
+                h2: ({node, ...props}) => <h2 className={`text-xl font-bold mb-2 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
+                h3: ({node, ...props}) => <h3 className={`text-lg font-bold mb-1 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
+                p: ({node, ...props}) => <p className={`mb-2 last:mb-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                strong: ({node, ...props}) => <strong className={`font-bold ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
+                em: ({node, ...props}) => <em className={`italic ${isUser ? 'text-white' : 'text-gray-700'}`} {...props} />,
+                ul: ({node, ...props}) => <ul className={`list-disc list-inside mb-2 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                ol: ({node, ...props}) => <ol className={`list-decimal list-inside mb-2 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                li: ({node, ...props}) => <li className={`mb-1 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                code: ({node, inline, ...props}) => 
+                  inline ? (
+                    <code className={`${isUser ? 'bg-blue-600/30 text-white' : 'bg-gray-100 text-gray-800'} px-1 py-0.5 rounded text-sm`} {...props} />
+                  ) : (
+                    <code className={`block ${isUser ? 'bg-blue-600/30 text-white' : 'bg-gray-100 text-gray-800'} p-2 rounded text-sm my-2 overflow-x-auto`} {...props} />
+                  ),
+                blockquote: ({node, ...props}) => <blockquote className={`border-l-4 ${isUser ? 'border-blue-300 text-white' : 'border-gray-300 text-gray-700'} pl-4 italic my-2`} {...props} />,
+                a: ({node, ...props}) => <a className={`${isUser ? 'text-blue-200 underline' : 'text-blue-600 underline'} hover:opacity-80`} {...props} target="_blank" rel="noopener noreferrer" />,
+              }}
+            >
+              {message}
+            </ReactMarkdown>
+          </div>
         </div>
         {timestamp && (
           <span className="text-xs text-gray-500 mt-1 px-2">
