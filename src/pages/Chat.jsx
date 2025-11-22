@@ -80,8 +80,11 @@ export default function Chat() {
   // Salvar mensagem no banco
   const createMessageMutation = useMutation({
     mutationFn: (messageData) => base44.entities.Message.create(messageData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["messages", user?.id] });
+    onSuccess: (newMessage) => {
+      // Atualizar o cache diretamente sem invalidar (evita recarregar)
+      queryClient.setQueryData(["messages", user?.id], (oldMessages) => {
+        return [...(oldMessages || []), newMessage];
+      });
       setTempMessages([]);
     }
   });
