@@ -40,15 +40,15 @@ export default function ChatMessage({ message, isUser, timestamp }) {
           <div className="text-sm whitespace-pre-wrap break-words prose prose-sm max-w-none">
             <ReactMarkdown
               components={{
-                h1: ({node, ...props}) => <h1 className={`text-2xl font-bold mb-2 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
-                h2: ({node, ...props}) => <h2 className={`text-xl font-bold mb-2 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
-                h3: ({node, ...props}) => <h3 className={`text-lg font-bold mb-1 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
-                p: ({node, ...props}) => <p className={`mb-2 last:mb-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                h1: ({node, ...props}) => <h1 className={`text-2xl font-bold mb-2 mt-2 first:mt-0 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
+                h2: ({node, ...props}) => <h2 className={`text-xl font-bold mb-2 mt-2 first:mt-0 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
+                h3: ({node, ...props}) => <h3 className={`text-lg font-bold mb-1 mt-2 first:mt-0 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
+                p: ({node, ...props}) => <p className={`mb-1 last:mb-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
                 strong: ({node, ...props}) => <strong className={`font-bold ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
                 em: ({node, ...props}) => <em className={`italic ${isUser ? 'text-white' : 'text-gray-700'}`} {...props} />,
-                ul: ({node, ...props}) => <ul className={`list-disc list-inside mb-2 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
-                ol: ({node, ...props}) => <ol className={`list-decimal list-inside mb-2 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
-                li: ({node, ...props}) => <li className={`mb-1 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                ul: ({node, ...props}) => <ul className={`list-disc list-inside mb-1 space-y-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                ol: ({node, ...props}) => <ol className={`list-decimal list-inside mb-1 space-y-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                li: ({node, ...props}) => <li className={`mb-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
                 code: ({node, inline, ...props}) => 
                   inline ? (
                     <code className={`${isUser ? 'bg-blue-600/30 text-white' : 'bg-gray-100 text-gray-800'} px-1 py-0.5 rounded text-sm`} {...props} />
