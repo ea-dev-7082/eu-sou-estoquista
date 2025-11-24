@@ -37,7 +37,7 @@ export default function ChatMessage({ message, isUser, timestamp }) {
               : "bg-white text-gray-800 rounded-tl-sm border border-gray-200"
           }`}
         >
-          <div className="text-sm whitespace-pre-wrap break-words prose prose-sm max-w-none">
+          <div className="text-base whitespace-pre-wrap break-words prose prose-base max-w-none">
             <ReactMarkdown
               components={{
                 h1: ({node, ...props}) => <h1 className={`text-2xl font-bold mb-2 mt-2 first:mt-0 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
