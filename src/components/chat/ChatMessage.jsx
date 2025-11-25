@@ -48,7 +48,7 @@ export default function ChatMessage({ message, isUser, timestamp }) {
                 em: ({node, ...props}) => <em className={`italic ${isUser ? 'text-white' : 'text-gray-700'}`} {...props} />,
                 ul: ({node, ...props}) => <ul className={`list-disc pl-5 mb-0 space-y-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
                 ol: ({node, ...props}) => <ol className={`list-decimal pl-5 mb-0 space-y-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
-                li: ({node, ...props}) => <li className={`mb-0 ml-0 leading-snug ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                li: ({node, ...props}) => <li className={`mb-0 ml-0 leading-tight [&>p]:inline ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
                 code: ({node, inline, ...props}) => 
                   inline ? (
                     <code className={`${isUser ? 'bg-blue-600/30 text-white' : 'bg-gray-100 text-gray-800'} px-1 py-0.5 rounded text-sm`} {...props} />
