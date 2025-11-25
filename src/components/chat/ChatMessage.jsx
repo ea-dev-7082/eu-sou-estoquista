@@ -43,7 +43,7 @@ export default function ChatMessage({ message, isUser, timestamp }) {
                 h1: ({node, ...props}) => <h1 className={`text-2xl font-bold mb-2 mt-2 first:mt-0 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
                 h2: ({node, ...props}) => <h2 className={`text-xl font-bold mb-2 mt-2 first:mt-0 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
                 h3: ({node, ...props}) => <h3 className={`text-lg font-bold mb-1 mt-2 first:mt-0 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
-                p: ({node, ...props}) => <p className={`mb-0.5 last:mb-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                p: ({node, ...props}) => <p className={`mb-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
                 strong: ({node, ...props}) => <strong className={`font-bold ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
                 em: ({node, ...props}) => <em className={`italic ${isUser ? 'text-white' : 'text-gray-700'}`} {...props} />,
                 ul: ({node, ...props}) => <ul className={`list-disc pl-5 mb-1 space-y-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
