@@ -335,7 +335,7 @@ export default function Chat() {
 
                     {msg.agent_response &&
               <ChatMessage
-                message={msg.agent_response}
+                message={normalizeAIMessage(msg.agent_response)}
                 isUser={false}
                 timestamp={msg.timestamp} />
 
