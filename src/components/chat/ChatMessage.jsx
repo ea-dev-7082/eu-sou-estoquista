@@ -46,8 +46,8 @@ export default function ChatMessage({ message, isUser, timestamp }) {
                 p: ({node, ...props}) => <p className={`mb-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
                 strong: ({node, ...props}) => <strong className={`font-bold ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
                 em: ({node, ...props}) => <em className={`italic ${isUser ? 'text-white' : 'text-gray-700'}`} {...props} />,
-                ul: ({node, ...props}) => <ul className={`list-disc pl-5 mb-0 space-y-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
-                ol: ({node, ...props}) => <ol className={`list-decimal pl-5 mb-0 space-y-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                ul: ({node, ...props}) => <ul className={`list-disc pl-5 mt-0 mb-0 space-y-0 [&:first-child]:mt-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                ol: ({node, ...props}) => <ol className={`list-decimal pl-5 mt-0 mb-0 space-y-0 [&:first-child]:mt-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
                 li: ({node, ...props}) => <li className={`mb-0 ml-0 leading-tight [&>p]:inline ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
                 code: ({node, inline, ...props}) => 
                   inline ? (
