@@ -12,6 +12,31 @@ import ChatMessage from "../components/chat/ChatMessage";
 import ChatInput from "../components/chat/ChatInput";
 import TypingIndicator from "../components/chat/TypingIndicator";
 
+function normalizeAIMessage(raw) {
+  let text = raw;
+
+  // 1. Remove headings Markdown
+  text = text.replace(/^#{1,6}\s*/gm, "");
+
+  // 2. Corrige bullets soltos: 
+  // "- \n\n**Título:**" => "\u200B- **Título:**"
+  text = text.replace(/\n[-•*]\s*\n+(\*\*.+)/g, "\n\u200B- $1");
+
+  // 3. Converte bullets markdown em invisíveis
+  text = text.replace(/^\s*[-•*]\s+(?=\*\*)/gm, "\u200B- ");
+
+  // 4. Remove bullets vazios sozinhos (•, -, etc.)
+  text = text.replace(/^\s*[•\-*]\s*$/gm, "");
+
+  // 5. Remove linhas vazias duplicadas
+  text = text.replace(/\n{3,}/g, "\n\n");
+
+  // 6. Remove `<p>` artificiais vindos de quebra irregular
+  text = text.replace(/\n\s*\n\s*\n/g, "\n\n");
+
+  return text.trim();
+}
+
 export default function Chat() {
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState(null);
