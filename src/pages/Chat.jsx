@@ -13,41 +13,24 @@ import ChatInput from "../components/chat/ChatInput";
 import TypingIndicator from "../components/chat/TypingIndicator";
 
 function normalizeAIMessage(raw) {
-  // Normaliza quebras de linha (\r\n, \r -> \n)
+  // Normaliza quebras de linha
   let text = raw.replace(/\r\n?/g, "\n");
 
-  // 1) Remove títulos Markdown (#, ##, ### etc.)
+  // 1) Remove títulos Markdown (#, ##, ###...) se você não quiser eles
   text = text.replace(/^#{1,6}\s*/gm, "");
 
   // 2) Corrige bullets QUEBRADOS:
-  //    "- \n\n**Texto..."  ou  "• \n\nTexto..."  =>  "\n\u200B- **Texto..."
-  text = text.replace(
-    /\n[•\-\*]\s*\n+(\s*\*\*[^\n]+)/g,
-    "\n\u200B- $1"
-  );
+  //    "- \n\nTexto..." ou "• \n\nTexto..." => "- Texto..."
+  text = text.replace(/\n[•\-\*]\s*\n+(\s*\S[^\n]*)/g, "\n- $1");
 
-  //    "- \n\nTexto..." (sem negrito) => "\n\u200B- Texto..."
-  text = text.replace(
-    /\n[•\-\*]\s*\n+(\s*\S[^\n]*)/g,
-    "\n\u200B- $1"
-  );
-
-  // 3) Converte QUALQUER linha que comece com -, * ou • em bullet invisível
-  //    "- Algo" / "* Algo" / "• Algo" => "\u200B- Algo"
-  text = text.replace(
-    /^\s*[•\-\*]\s+(.*)$/gm,
-    "\u200B- $1"
-  );
-
-  // 4) Remove bullets vazios (linha só com o marcador)
+  // 3) Remove bullets vazios (linha só com - ou •)
   text = text.replace(/^\s*[•\-\*]\s*$/gm, "");
-  text = text.replace(/^\u200B-\s*$/gm, "");
 
-  // 5) Remove linha em branco ENTRE itens da lista
-  //    "\n\n\u200B- " => "\n\u200B- "
-  text = text.replace(/\n\n(\u200B- )/g, "\n$1");
+  // 4) Remove linha em branco ENTRE itens da lista:
+  //    "\n\n- " => "\n- "
+  text = text.replace(/\n\n(-\s+)/g, "\n$1");
 
-  // 6) Limita a 2 quebras no máximo seguidas (3+ => 2)
+  // 5) Limita a 2 quebras no máximo seguidas (3+ => 2)
   text = text.replace(/\n{3,}/g, "\n\n");
 
   return text.trim();
