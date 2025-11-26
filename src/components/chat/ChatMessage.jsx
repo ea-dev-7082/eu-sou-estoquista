@@ -37,18 +37,18 @@ export default function ChatMessage({ message, isUser, timestamp }) {
               : "bg-white text-gray-800 rounded-tl-sm border border-gray-200"
           }`}
         >
-          <div className="text-base whitespace-pre-wrap break-words prose prose-base max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_ul]:my-0 [&_ol]:my-0 [&_li]:my-0 [&_p+ul]:mt-0 [&_p+ol]:mt-0">
+          <div className="text-base whitespace-pre-wrap break-words prose prose-base max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
             <ReactMarkdown
-                                components={{
+              components={{
                 h1: ({node, ...props}) => <h1 className={`text-2xl font-bold mb-1 mt-1 first:mt-0 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
                 h2: ({node, ...props}) => <h2 className={`text-xl font-bold mb-1 mt-1 first:mt-0 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
                 h3: ({node, ...props}) => <h3 className={`text-lg font-bold mb-0.5 mt-1 first:mt-0 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
-                p: ({node, ...props}) => <p className={`mb-0 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
+                p: ({node, ...props}) => <p className={`mb-1 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
                 strong: ({node, ...props}) => <strong className={`font-bold ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
                 em: ({node, ...props}) => <em className={`italic ${isUser ? 'text-white' : 'text-gray-700'}`} {...props} />,
-                ul: ({node, ...props}) => <ul className={`list-disc pl-5 my-0 space-y-0 ${isUser ? 'text-white' : 'text-gray-800'}`} style={{marginTop: 0, marginBottom: 0}} {...props} />,
+                ul: ({node, ...props}) => <ul className={`list-disc pl-5 my-1 space-y-1 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
                 ol: ({node, ...props}) => <ol className={`list-decimal pl-5 my-1 space-y-1 ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
-                li: ({node, ...props}) => <li className={`my-0 ml-0 leading-tight ${isUser ? 'text-white' : 'text-gray-800'}`} style={{marginTop: 0, marginBottom: 0}} {...props}>{props.children}</li>,
+                li: ({node, ...props}) => <li className={`leading-normal ${isUser ? 'text-white' : 'text-gray-800'}`} {...props} />,
                 code: ({node, inline, ...props}) => 
                   inline ? (
                     <code className={`${isUser ? 'bg-blue-600/30 text-white' : 'bg-gray-100 text-gray-800'} px-1 py-0.5 rounded text-sm`} {...props} />
@@ -57,8 +57,7 @@ export default function ChatMessage({ message, isUser, timestamp }) {
                   ),
                 blockquote: ({node, ...props}) => <blockquote className={`border-l-4 ${isUser ? 'border-blue-300 text-white' : 'border-gray-300 text-gray-700'} pl-4 italic my-2`} {...props} />,
                 a: ({node, ...props}) => <a className={`${isUser ? 'text-blue-200 underline' : 'text-blue-600 underline'} hover:opacity-80`} {...props} target="_blank" rel="noopener noreferrer" />,
-
-                                    }}
+              }}
             >
               {message}
             </ReactMarkdown>
@@ -73,44 +72,3 @@ export default function ChatMessage({ message, isUser, timestamp }) {
     </motion.div>
   );
 }
-<ReactMarkdown
-  components={{
-    h1: ({node, ...props}) => (
-      <h1
-        className={`text-2xl font-bold mt-1 mb-1 first:mt-0 ${
-          isUser ? 'text-white' : 'text-gray-900'
-        }`}
-        {...props}
-      />
-    ),
-
-    h2: ({node, ...props}) => (
-      <h2
-        className={`text-xl font-bold mt-2 mb-1 ${
-          isUser ? 'text-white' : 'text-gray-900'
-        }`}
-        {...props}
-      />
-    ),
-
-    h3: ({node, ...props}) => (
-      <h3
-        className={`text-lg font-bold mt-2 mb-1 ${
-          isUser ? 'text-white' : 'text-gray-900'
-        }`}
-        {...props}
-      />
-    ),
-
-    p: ({node, ...props}) => (
-      <p
-        className={`${isUser ? 'text-white' : 'text-gray-800'} leading-tight`}
-        style={{ marginTop: 0, marginBottom: 0 }}
-        {...props}
-      />
-    ),
-
-    ul: ({node, ...props}) => (
-      <ul
-        className={`${isUser ? 'text-white' : 'text-gray-800'} list-disc`}
-        style={{ marginTop: 0, marginBottom
