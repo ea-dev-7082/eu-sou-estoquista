@@ -151,10 +151,51 @@ export default function Chat() {
         throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      console.log("Resposta do n8n:", data);
+      const responseText = await response.text();
+      console.log("Resposta do n8n (raw):", responseText);
 
-      const agentResponse = data.response || data.message || data.output || "Desculpe, não consegui processar sua mensagem.";
+      let agentResponse = "Desculpe, não consegui processar sua mensagem.";
+      
+      if (responseText && responseText.trim()) {
+        try {
+          const data = JSON.parse(responseText);
+          console.log("Resposta do n8n (parsed):", data);
+          
+          // Tentar extrair a resposta de diferentes formatos possíveis
+          if (typeof data === 'string') {
+            agentResponse = data;
+          } else if (data.response) {
+            // Verificar se response é um array com objetos contendo text
+            if (Array.isArray(data.response)) {
+              const textItems = data.response
+                .filter(item => item.type === 'text' && item.text)
+                .map(item => {
+                  // Se text for um JSON string, tentar extrair pageContent
+                  try {
+                    const parsed = JSON.parse(item.text);
+                    return parsed.pageContent || item.text;
+                  } catch {
+                    return item.text;
+                  }
+                });
+              agentResponse = textItems.join('\n\n') || data.response;
+            } else {
+              agentResponse = data.response;
+            }
+          } else if (data.message) {
+            agentResponse = data.message;
+          } else if (data.output) {
+            agentResponse = data.output;
+          } else if (data.text) {
+            agentResponse = data.text;
+          } else if (data.pageContent) {
+            agentResponse = data.pageContent;
+          }
+        } catch (parseError) {
+          console.log("Resposta não é JSON, usando como texto:", responseText);
+          agentResponse = responseText;
+        }
+      }
 
       // Salvar conversa no banco
       await createMessageMutation.mutateAsync({
