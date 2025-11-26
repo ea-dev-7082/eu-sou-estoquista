@@ -73,3 +73,44 @@ export default function ChatMessage({ message, isUser, timestamp }) {
     </motion.div>
   );
 }
+<ReactMarkdown
+  components={{
+    h1: ({node, ...props}) => (
+      <h1
+        className={`text-2xl font-bold mt-1 mb-1 first:mt-0 ${
+          isUser ? 'text-white' : 'text-gray-900'
+        }`}
+        {...props}
+      />
+    ),
+
+    h2: ({node, ...props}) => (
+      <h2
+        className={`text-xl font-bold mt-2 mb-1 ${
+          isUser ? 'text-white' : 'text-gray-900'
+        }`}
+        {...props}
+      />
+    ),
+
+    h3: ({node, ...props}) => (
+      <h3
+        className={`text-lg font-bold mt-2 mb-1 ${
+          isUser ? 'text-white' : 'text-gray-900'
+        }`}
+        {...props}
+      />
+    ),
+
+    p: ({node, ...props}) => (
+      <p
+        className={`${isUser ? 'text-white' : 'text-gray-800'} leading-tight`}
+        style={{ marginTop: 0, marginBottom: 0 }}
+        {...props}
+      />
+    ),
+
+    ul: ({node, ...props}) => (
+      <ul
+        className={`${isUser ? 'text-white' : 'text-gray-800'} list-disc`}
+        style={{ marginTop: 0, marginBottom
