@@ -37,7 +37,7 @@ export default function ChatMessage({ message, isUser, timestamp }) {
               : "bg-white text-gray-800 rounded-tl-sm border border-gray-200"
           }`}
         >
-          <div className="text-base whitespace-pre-wrap break-words prose prose-base max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_ul]:my-0 [&_ol]:my-0 [&_li]:my-0 [&_p+ul]:mt-0 [&_p+ol]:mt-0">
+          <div className="text-base whitespace-pre-wrap break-words prose prose-base max-w-none leading-snug [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_ul]:my-0 [&_ol]:my-0 [&_li]:my-0 [&_p+ul]:mt-0 [&_p+ol]:mt-0 [&_p]:leading-snug">
             <ReactMarkdown
                                 components={{
                 h1: ({node, ...props}) => <h1 className={`text-2xl font-bold mb-1 mt-1 first:mt-0 ${isUser ? 'text-white' : 'text-gray-900'}`} {...props} />,
@@ -48,7 +48,7 @@ export default function ChatMessage({ message, isUser, timestamp }) {
                 em: ({node, ...props}) => <em className={`italic ${isUser ? 'text-white' : 'text-gray-700'}`} {...props} />,
                 ul: ({node, ...props}) => <ul className={`list-disc pl-5 my-0 space-y-0 ${isUser ? 'text-white' : 'text-gray-800'}`} style={{marginTop: 0, marginBottom: 0}} {...props} />,
                 ol: ({node, ...props}) => <ol className={`list-decimal pl-5 my-0 space-y-0 ${isUser ? 'text-white' : 'text-gray-800'}`} style={{marginTop: 0, marginBottom: 0}} {...props} />,
-                li: ({node, ...props}) => <li className={`my-0 ml-0 leading-tight ${isUser ? 'text-white' : 'text-gray-800'}`} style={{marginTop: 0, marginBottom: 0}} {...props}>{props.children}</li>,
+                li: ({node, ...props}) => <li className={`my-0 ml-0 leading-snug ${isUser ? 'text-white' : 'text-gray-800'}`} style={{marginTop: 0, marginBottom: 0}} {...props}>{props.children}</li>,
                 code: ({node, inline, ...props}) => 
                   inline ? (
                     <code className={`${isUser ? 'bg-blue-600/30 text-white' : 'bg-gray-100 text-gray-800'} px-1 py-0.5 rounded text-sm`} {...props} />
