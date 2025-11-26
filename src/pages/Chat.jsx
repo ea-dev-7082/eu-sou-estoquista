@@ -15,24 +15,22 @@ import TypingIndicator from "../components/chat/TypingIndicator";
 function normalizeAIMessage(raw) {
   let text = raw;
 
-  // 1. Remove headings Markdown
+  // 1. Remove headings Markdown (#, ##, ### etc.)
   text = text.replace(/^#{1,6}\s*/gm, "");
 
-  // 2. Corrige bullets soltos: 
-  // "- \n\n**Título:**" => "\u200B- **Título:**"
-  text = text.replace(/\n[-•*]\s*\n+(\*\*.+)/g, "\n\u200B- $1");
+  // 2. Corrige bullets quebrados:
+  // "- \n\nAlguma coisa" ou "• \n\nAlguma coisa" => "\u200B- Alguma coisa"
+  text = text.replace(/\n[•\-\*]\s*\n+(\S.+)/g, "\n\u200B- $1");
 
-  // 3. Converte bullets markdown em invisíveis
-  text = text.replace(/^\s*[-•*]\s+(?=\*\*)/gm, "\u200B- ");
+  // 3. Converte QUALQUER linha de lista markdown em prefixo invisível:
+  // linhas que começam com -, * ou • seguidos de espaço
+  text = text.replace(/^\s*[•\-\*]\s+/gm, "\u200B- ");
 
-  // 4. Remove bullets vazios sozinhos (•, -, etc.)
-  text = text.replace(/^\s*[•\-*]\s*$/gm, "");
+  // 4. Remove bullets vazios sozinhos
+  text = text.replace(/^\s*[•\-\*]\s*$/gm, "");
 
-  // 5. Remove linhas vazias duplicadas
+  // 5. Remove linhas vazias demais (3+ quebras viram só 2)
   text = text.replace(/\n{3,}/g, "\n\n");
-
-  // 6. Remove `<p>` artificiais vindos de quebra irregular
-  text = text.replace(/\n\s*\n\s*\n/g, "\n\n");
 
   return text.trim();
 }
