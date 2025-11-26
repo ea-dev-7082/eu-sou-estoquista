@@ -16,21 +16,25 @@ function normalizeAIMessage(raw) {
   // Normaliza quebras de linha
   let text = raw.replace(/\r\n?/g, "\n");
 
-  // 1) Remove títulos Markdown (#, ##, ###...) se você não quiser eles
+  // 1) Converter qualquer "\u200B-" em bullet normal "- "
+  //    (pega tanto o caractere invisível real quanto a sequência textual "\u200B-")
+  text = text.replace(/\u200B-\s*/g, "- ");      // U+200B real
+  text = text.replace(/\\u200B-?\s*/g, "- ");    // sequência literal "\u200B-"
+
+  // 2) Remover títulos markdown (#, ##, ###...) se você não quiser eles
   text = text.replace(/^#{1,6}\s*/gm, "");
 
-  // 2) Corrige bullets QUEBRADOS:
+  // 3) Corrigir bullets quebrados:
   //    "- \n\nTexto..." ou "• \n\nTexto..." => "- Texto..."
   text = text.replace(/\n[•\-\*]\s*\n+(\s*\S[^\n]*)/g, "\n- $1");
 
-  // 3) Remove bullets vazios (linha só com - ou •)
+  // 4) Remover bullets vazios (linha só com - ou •)
   text = text.replace(/^\s*[•\-\*]\s*$/gm, "");
 
-  // 4) Remove linha em branco ENTRE itens da lista:
-  //    "\n\n- " => "\n- "
+  // 5) Remover linha em branco ENTRE itens da lista: "\n\n- " => "\n- "
   text = text.replace(/\n\n(-\s+)/g, "\n$1");
 
-  // 5) Limita a 2 quebras no máximo seguidas (3+ => 2)
+  // 6) Limitar a, no máximo, 2 quebras seguidas (3+ => 2)
   text = text.replace(/\n{3,}/g, "\n\n");
 
   return text.trim();
