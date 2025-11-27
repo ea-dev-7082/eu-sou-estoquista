@@ -16,17 +16,28 @@ function normalizeAIMessage(raw) {
   // Normaliza quebras de linha (\r\n, \r -> \n)
   let text = raw.replace(/\r\n?/g, "\n");
 
-  // 1) Converter qualquer "\u200B-" (real ou literal) em texto sem bullet
-  text = text.replace(/\u200B-\s*/g, "");   // caractere invisível real + hífen
-  text = text.replace(/\\u200B-?\s*/g, ""); // sequência textual "\u200B-"
+  // 1) Converter qualquer "\u200B-" (real ou literal) em bullet normal "- "
+  text = text.replace(/\u200B-\s*/g, "- ");   // caractere invisível real + hífen
+  text = text.replace(/\\u200B-?\s*/g, "- "); // sequência textual "\u200B-"
 
   // 2) Remover títulos Markdown (#, ##, ###...) se ainda vierem
   text = text.replace(/^#{1,6}\s*/gm, "");
 
-  // 3) Remover bullets no início das linhas (-, •, *)
-  text = text.replace(/^[\s]*[-•\*]\s+/gm, "");
+  // 3) Corrigir bullets QUEBRADOS:
+  //    "- \n\nTexto..." ou "• \n\nTexto..." => "- Texto..."
+  text = text.replace(/\n[•\-\*]\s*\n+(\s*\S[^\n]*)/g, "\n- $1");
 
-  // 4) Remover linhas vazias extras
+  // 4) Remover bullets vazios (linha só com - ou •)
+  text = text.replace(/^\s*[•\-\*]\s*$/gm, "");
+
+  // 5) Remover linha em branco ENTRE itens da lista: "\n\n- " => "\n- "
+  text = text.replace(/\n\n(-\s+)/g, "\n$1");
+
+  // 6) Garantir UMA linha em branco depois de linhas-título que terminam com ":"
+  //    Ex.: "Módulo 1: Liderança em Foco\n- Gestão..." => "...\n\n- Gestão..."
+  text = text.replace(/(^.+:\s*)\n(-\s+)/gm, "$1\n\n$2");
+
+  // 7) Limitar a, no máximo, 2 quebras de linha seguidas (3+ => 2)
   text = text.replace(/\n{3,}/g, "\n\n");
 
   return text.trim();
