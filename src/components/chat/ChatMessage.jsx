@@ -69,22 +69,19 @@ export default function ChatMessage({ message, isUser, timestamp }) {
                 em: ({node, ...props}) => <em className={`italic ${isUser ? 'text-white' : 'text-gray-700'}`} {...props} />,
                 ul: ({node, ...props}) => (
                   <ul
-                    className={`${isUser ? 'text-white' : 'text-gray-800'} list-disc`}
-                    style={{ marginTop: 0, marginBottom: 0, paddingLeft: '1.1rem' }}
+                    className={`${isUser ? 'text-white' : 'text-gray-800'} list-disc pl-5 my-1`}
                     {...props}
                   />
                 ),
                 ol: ({node, ...props}) => (
                   <ol
-                    className={`${isUser ? 'text-white' : 'text-gray-800'} list-decimal`}
-                    style={{ marginTop: 0, marginBottom: 0, paddingLeft: '1.1rem' }}
+                    className={`${isUser ? 'text-white' : 'text-gray-800'} list-decimal pl-5 my-1`}
                     {...props}
                   />
                 ),
                 li: ({node, children, ...props}) => (
                   <li
-                    className={`${isUser ? 'text-white' : 'text-gray-800'} leading-normal [&>p]:inline`}
-                    style={{ marginTop: 0, marginBottom: '0.25rem' }}
+                    className={`${isUser ? 'text-white' : 'text-gray-800'} leading-snug my-0 [&>p]:inline [&>p]:m-0`}
                     {...props}
                   >
                     {children}
