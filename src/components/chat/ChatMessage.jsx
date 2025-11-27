@@ -81,13 +81,14 @@ export default function ChatMessage({ message, isUser, timestamp }) {
                     {...props}
                   />
                 ),
-                li: ({node, ...props}) => (
-                                        <li
-                                          className={`${isUser ? 'text-white' : 'text-gray-800'} leading-tight [&>p]:inline`}
-                                          style={{ marginTop: 0, marginBottom: 0 }}
-                                          {...props}
-                                        />
-                                      ),
+                li: ({node, children, ...props}) => (
+                  <li
+                    className={`${isUser ? 'text-white' : 'text-gray-800'} leading-normal mb-2`}
+                    {...props}
+                  >
+                    {children}
+                  </li>
+                ),
                 code: ({node, inline, ...props}) =>
                   inline ? (
                     <code
