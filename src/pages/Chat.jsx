@@ -30,12 +30,10 @@ function normalizeAIMessage(raw) {
   // 4) Remover bullets vazios (linha só com - ou •)
   text = text.replace(/^\s*[•\-\*]\s*$/gm, "");
 
-  // 5) Remover linha em branco ENTRE itens da lista: "\n\n- " => "\n- "
+  // 5) Remover TODAS as linhas em branco entre itens de lista
   text = text.replace(/\n\n+(-\s)/g, "\n$1");
-
-  // 6) Garantir UMA linha em branco depois de linhas-título que terminam com ":"
-  //    Ex.: "Módulo 1: Liderança em Foco\n- Gestão..." => "...\n\n- Gestão..."
-  text = text.replace(/(^.+:\s*)\n(-\s+)/gm, "$1\n\n$2");
+  text = text.replace(/\n\n+(•\s)/g, "\n$1");
+  text = text.replace(/\n\n+(\*\s)/g, "\n$1");
 
   // 7) Limitar a, no máximo, 2 quebras de linha seguidas (3+ => 2)
   text = text.replace(/\n{3,}/g, "\n\n");
