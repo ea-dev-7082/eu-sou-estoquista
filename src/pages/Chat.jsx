@@ -29,7 +29,7 @@ function normalizeAIMessage(raw) {
 
   // 3b) Corrigir listas numeradas com quebra de linha após o número:
   //    "1.\n" ou "1.\n\n" => juntar com o texto seguinte
-  text = text.replace(/^(\d+\.)\s*\n+\s*/gm, "$1 ");
+  text = text.replace(/(\d+\.)\s*\n+\s*(\S)/g, "$1 $2");
 
   // 4) Remover bullets vazios (linha só com - ou •)
   text = text.replace(/^\s*[•\-\*]\s*$/gm, "");
