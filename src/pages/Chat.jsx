@@ -12,38 +12,7 @@ import ChatMessage from "../components/chat/ChatMessage";
 import ChatInput from "../components/chat/ChatInput";
 import TypingIndicator from "../components/chat/TypingIndicator";
 
-function normalizeAIMessage(raw) {
-  // Normaliza quebras de linha (\r\n, \r -> \n)
-  let text = raw.replace(/\r\n?/g, "\n");
 
-  // 1) Converter qualquer "\u200B-" (real ou literal) em bullet normal "- "
-  text = text.replace(/\u200B-\s*/g, "- ");
-  text = text.replace(/\\u200B-?\s*/g, "- ");
-
-  // 2) Remover títulos Markdown (#, ##, ###...) se ainda vierem
-  text = text.replace(/^#{1,6}\s*/gm, "");
-
-  // 3) Corrigir números de lista com quebra após o ponto (ex: "1.\n" -> "1. ")
-  text = text.replace(/(\d+\.)\s*\n+\s*/g, "$1 ");
-
-  // 4) Corrigir bullets com quebra após o marcador (ex: "-\n" -> "- ")
-  text = text.replace(/^([•\-\*])\s*\n+\s*/gm, "$1 ");
-
-  // 5) Remover bullets/números vazios
-  text = text.replace(/^\s*[•\-\*]\s*$/gm, "");
-  text = text.replace(/^\s*\d+\.\s*$/gm, "");
-
-  // 6) Remover linhas em branco entre itens de lista
-  text = text.replace(/\n\n+(\d+\.\s)/g, "\n$1");
-  text = text.replace(/\n\n+(-\s)/g, "\n$1");
-  text = text.replace(/\n\n+(•\s)/g, "\n$1");
-  text = text.replace(/\n\n+(\*\s)/g, "\n$1");
-
-  // 7) Limitar quebras de linha (3+ => 2)
-  text = text.replace(/\n{3,}/g, "\n\n");
-
-  return text.trim();
-}
 
 export default function Chat() {
   const [isTyping, setIsTyping] = useState(false);
