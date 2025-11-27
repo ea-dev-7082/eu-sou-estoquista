@@ -23,9 +23,9 @@ function normalizeAIMessage(raw) {
   // 2) Remover títulos Markdown (#, ##, ###...) se ainda vierem
   text = text.replace(/^#{1,6}\s*/gm, "");
 
-  // 3) Corrigir bullets QUEBRADOS:
-  //    "- \n\nTexto..." ou "• \n\nTexto..." => "- Texto..."
-  text = text.replace(/\n[•\-\*]\s*\n+(\s*\S[^\n]*)/g, "\n- $1");
+  // 3) Corrigir bullets com quebra de linha logo após o marcador:
+  //    "- \n" ou "- \n\n" => juntar com o texto seguinte
+  text = text.replace(/^([•\-\*])\s*\n+\s*/gm, "$1 ");
 
   // 4) Remover bullets vazios (linha só com - ou •)
   text = text.replace(/^\s*[•\-\*]\s*$/gm, "");
@@ -35,7 +35,7 @@ function normalizeAIMessage(raw) {
   text = text.replace(/\n\n+(•\s)/g, "\n$1");
   text = text.replace(/\n\n+(\*\s)/g, "\n$1");
 
-  // 7) Limitar a, no máximo, 2 quebras de linha seguidas (3+ => 2)
+  // 6) Limitar a, no máximo, 2 quebras de linha seguidas (3+ => 2)
   text = text.replace(/\n{3,}/g, "\n\n");
 
   return text.trim();
