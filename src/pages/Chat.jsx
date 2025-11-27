@@ -27,6 +27,10 @@ function normalizeAIMessage(raw) {
   //    "- \n" ou "- \n\n" => juntar com o texto seguinte
   text = text.replace(/^([•\-\*])\s*\n+\s*/gm, "$1 ");
 
+  // 3b) Corrigir listas numeradas com quebra de linha após o número:
+  //    "1.\n" ou "1.\n\n" => juntar com o texto seguinte
+  text = text.replace(/^(\d+\.)\s*\n+\s*/gm, "$1 ");
+
   // 4) Remover bullets vazios (linha só com - ou •)
   text = text.replace(/^\s*[•\-\*]\s*$/gm, "");
 
@@ -34,6 +38,7 @@ function normalizeAIMessage(raw) {
   text = text.replace(/\n\n+(-\s)/g, "\n$1");
   text = text.replace(/\n\n+(•\s)/g, "\n$1");
   text = text.replace(/\n\n+(\*\s)/g, "\n$1");
+  text = text.replace(/\n\n+(\d+\.\s)/g, "\n$1");
 
   // 6) Limitar a, no máximo, 2 quebras de linha seguidas (3+ => 2)
   text = text.replace(/\n{3,}/g, "\n\n");
