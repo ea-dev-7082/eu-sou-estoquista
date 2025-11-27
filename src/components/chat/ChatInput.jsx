@@ -30,8 +30,8 @@ export default function ChatInput({ onSendMessage, isLoading, disabled }) {
   };
 
   return (
-    <div className="bg-white border-t border-gray-200 p-4 shadow-lg">
-      <form onSubmit={handleSubmit} className="flex gap-3 items-end max-w-4xl mx-auto">
+    <div className="bg-white border-t border-gray-200 p-2 md:p-4 shadow-lg">
+      <form onSubmit={handleSubmit} className="flex gap-2 md:gap-3 items-end max-w-4xl mx-auto">
         <Textarea
           ref={textareaRef}
           value={message}
@@ -45,7 +45,7 @@ export default function ChatInput({ onSendMessage, isLoading, disabled }) {
         <Button
           type="submit"
           disabled={!message.trim() || isLoading || disabled}
-          className="bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl h-11 px-6 shadow-md"
+          className="bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl h-10 md:h-11 px-4 md:px-6 shadow-md"
         >
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />

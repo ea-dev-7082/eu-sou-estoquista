@@ -262,7 +262,7 @@ export default function Chat() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+      <div className="bg-white md:rounded-2xl shadow-xl overflow-hidden border-0 md:border border-gray-200 -mx-4 md:mx-0">
         {/* Chat Header */}
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 flex items-center justify-between">
           <div>
@@ -311,7 +311,7 @@ export default function Chat() {
         }
 
         {/* Messages Area */}
-        <div className="h-[calc(100vh-350px)] overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white">
+        <div className="h-[calc(100vh-280px)] md:h-[calc(100vh-350px)] overflow-y-auto p-3 md:p-6 bg-gradient-to-b from-gray-50 to-white">
           {allMessages.length === 0 && !isTyping ?
           <div className="flex flex-col items-center justify-center h-full text-center">
               <div className={`w-20 h-20 ${isUserBlocked ? 'bg-gradient-to-br from-red-500 to-red-600' : 'bg-gradient-to-br from-blue-500 to-indigo-600'} rounded-full flex items-center justify-center mb-4 shadow-lg`}>
