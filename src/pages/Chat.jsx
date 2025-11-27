@@ -23,13 +23,10 @@ function normalizeAIMessage(raw) {
   // 2) Remover títulos Markdown (#, ##, ###...) se ainda vierem
   text = text.replace(/^#{1,6}\s*/gm, "");
 
-  // 3) Corrigir bullets com quebra de linha logo após o marcador:
-  //    "- \n" ou "- \n\n" => juntar com o texto seguinte
-  text = text.replace(/^([•\-\*])\s*\n+\s*/gm, "$1 ");
-
-  // 3b) Corrigir listas numeradas com quebra de linha após o número:
-  //    "1.\n" ou "1.\n\n" => juntar com o texto seguinte
-  text = text.replace(/(\d+\.)\s*\n+\s*(\S)/g, "$1 $2");
+  // 3) Corrigir bullets e números com quebra de linha logo após o marcador:
+  //    Junta o marcador com o texto seguinte, removendo quebras de linha e espaços extras
+  //    Captura: (início linha) (marcador) (espaços/quebras) (primeiro char do texto)
+  text = text.replace(/(^|\n)([•\-\*]|\d+\.)\s+([^\s])/g, "$1$2 $3");
 
   // 4) Remover bullets vazios (linha só com - ou •)
   text = text.replace(/^\s*[•\-\*]\s*$/gm, "");
