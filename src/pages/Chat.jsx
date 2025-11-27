@@ -31,7 +31,7 @@ function normalizeAIMessage(raw) {
   text = text.replace(/^\s*[•\-\*]\s*$/gm, "");
 
   // 5) Remover linha em branco ENTRE itens da lista: "\n\n- " => "\n- "
-  text = text.replace(/\n\n(-\s+)/g, "\n$1");
+  text = text.replace(/\n\n+(-\s)/g, "\n$1");
 
   // 6) Garantir UMA linha em branco depois de linhas-título que terminam com ":"
   //    Ex.: "Módulo 1: Liderança em Foco\n- Gestão..." => "...\n\n- Gestão..."
