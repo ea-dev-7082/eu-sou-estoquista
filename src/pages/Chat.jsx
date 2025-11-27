@@ -17,8 +17,8 @@ function normalizeAIMessage(raw) {
   let text = raw.replace(/\r\n?/g, "\n");
 
   // 1) Converter qualquer "\u200B-" (real ou literal) em bullet normal "- "
-  text = text.replace(/\u200B-\s*/g, "- ");
-  text = text.replace(/\\u200B-?\s*/g, "- ");
+  text = text.replace(/\u200B-\s*/g, "-");
+  text = text.replace(/\\u200B-?\s*/g, "-");
 
   // 2) Remover títulos Markdown (#, ##, ###...) se ainda vierem
   text = text.replace(/^#{1,6}\s*/gm, "");
