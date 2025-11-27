@@ -342,10 +342,10 @@ export default function Chat() {
                 timestamp={msg.timestamp} />
 
                     {msg.agent_response &&
-                                        <ChatMessage
-                                          message={msg.agent_response}
-                                          isUser={false}
-                                          timestamp={msg.timestamp} />
+              <ChatMessage
+                message={normalizeAIMessage(msg.agent_response)}
+                isUser={false}
+                timestamp={msg.timestamp} />
 
               }
                   </React.Fragment>
