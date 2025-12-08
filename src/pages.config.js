@@ -9,7 +9,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Chat",
+    mainPage: "Users",
     Pages: PAGES,
     Layout: __Layout,
 };
