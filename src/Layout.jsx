@@ -100,8 +100,8 @@ export default function Layout({ children, currentPageName }) {
                   <MessageSquare className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-lg md:text-xl font-bold text-gray-900">Chat AI</h1>
-                  <p className="text-xs text-gray-500 hidden md:block">Assistente Inteligente</p>
+                  <h1 className="text-lg md:text-xl font-bold text-gray-900">Sofia</h1>
+                  <p className="text-xs text-gray-500 hidden md:block">Treinamento Comunicação Eficaz</p>
                 </div>
               </div>
 
