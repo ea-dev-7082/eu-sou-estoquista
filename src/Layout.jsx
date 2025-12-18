@@ -101,7 +101,7 @@ export default function Layout({ children, currentPageName }) {
                 </div>
                 <div>
                   <h1 className="text-lg md:text-xl font-bold text-gray-900">Sofia</h1>
-                  <p className="text-xs text-gray-500 hidden md:block">Treinamento Comunicação Eficaz</p>
+                  <p className="text-xs text-gray-500 hidden md:block">Treinamento Eu Sou Estoquista</p>
                 </div>
               </div>
 
