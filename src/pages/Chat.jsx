@@ -188,29 +188,29 @@ export default function Chat() {
       console.log("Resposta do n8n (raw):", responseText);
 
       let agentResponse = "Desculpe, não consegui processar sua mensagem.";
-      
+
       if (responseText && responseText.trim()) {
         try {
           const data = JSON.parse(responseText);
           console.log("Resposta do n8n (parsed):", data);
-          
+
           // Tentar extrair a resposta de diferentes formatos possíveis
           if (typeof data === 'string') {
             agentResponse = data;
           } else if (data.response) {
             // Verificar se response é um array com objetos contendo text
             if (Array.isArray(data.response)) {
-              const textItems = data.response
-                .filter(item => item.type === 'text' && item.text)
-                .map(item => {
-                  // Se text for um JSON string, tentar extrair pageContent
-                  try {
-                    const parsed = JSON.parse(item.text);
-                    return parsed.pageContent || item.text;
-                  } catch {
-                    return item.text;
-                  }
-                });
+              const textItems = data.response.
+              filter((item) => item.type === 'text' && item.text).
+              map((item) => {
+                // Se text for um JSON string, tentar extrair pageContent
+                try {
+                  const parsed = JSON.parse(item.text);
+                  return parsed.pageContent || item.text;
+                } catch {
+                  return item.text;
+                }
+              });
               agentResponse = textItems.join('\n\n') || data.response;
             } else {
               agentResponse = data.response;
@@ -266,7 +266,8 @@ export default function Chat() {
         {/* Chat Header */}
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 flex items-center justify-between">
           <div>
-            <h2 className="text-white font-semibold text-lg">Assistente Estratégico de Aprendizado</h2>
+            <h2 className="text-white font-semibold text-lg">Assistente de Aprendizado
+            </h2>
             <p className="text-blue-100 text-sm">
               {isUserBlocked ? "Acesso bloqueado" : webhookUrl ? "Online - Responde instantaneamente" : "Aguardando configuração"}
             </p>
@@ -274,8 +275,7 @@ export default function Chat() {
         </div>
 
         {/* Usuário Bloqueado Alert */}
-        {isUserBlocked &&
-        <Alert variant="destructive" className="m-4">
+        {isUserBlocked && <Alert variant="destructive" className="m-4">
             <Ban className="h-4 w-4" />
             <AlertDescription>
               Seu acesso ao chat foi bloqueado pelo administrador. Entre em contato para mais informações.
