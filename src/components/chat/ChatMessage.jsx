@@ -15,16 +15,20 @@ export default function ChatMessage({ message, isUser, timestamp }) {
     >
       {/* Avatar */}
       <div
-        className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+        className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
           isUser
             ? "bg-gradient-to-br from-blue-500 to-indigo-600"
-            : "bg-gradient-to-br from-purple-500 to-pink-600"
+            : "bg-white"
         }`}
       >
         {isUser ? (
           <User className="w-4 h-4 md:w-5 md:h-5 text-white" />
         ) : (
-          <Bot className="w-4 h-4 md:w-5 md:h-5 text-white" />
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694445da3190cc9520b31aa3/086017e6b_image.png" 
+            alt="Sofia"
+            className="w-full h-full object-cover"
+          />
         )}
       </div>
 
