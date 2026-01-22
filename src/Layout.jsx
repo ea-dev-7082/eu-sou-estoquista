@@ -96,8 +96,12 @@ export default function Layout({ children, currentPageName }) {
             {/* Logo */}
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <MessageSquare className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-xl overflow-hidden shadow-lg">
+                  <img 
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694445da3190cc9520b31aa3/086017e6b_image.png" 
+                    alt="Sofia"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div>
                   <h1 className="text-lg md:text-xl font-bold text-gray-900">Sofia</h1>
